@@ -7,3 +7,12 @@ class UsersDto:
         'email': fields.String(required=True, description='user email address'),
         'public_id': fields.String(description='user Identifier')
     })
+
+class OwnersDto:
+    api = Namespace('owners', description='owners related operations')
+    owner = api.model('owners', {
+        'name': fields.String(required=True, description='owner name'),
+        'username': fields.String(required=True, description='owner username'),
+        'password': fields.String(required=True, description='owner password'),
+        'public_id': fields.String(description='user Identifier')
+    })
