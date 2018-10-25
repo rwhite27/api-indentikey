@@ -16,3 +16,6 @@ class OwnersDto:
         'password': fields.String(required=True, description='owner password'),
         'public_id': fields.String(description='user Identifier')
     })
+
+class VerifyDto:
+    api = Namespace('verify', description='verification related operations')
