@@ -19,3 +19,6 @@ class OwnersDto:
 
 class VerifyDto:
     api = Namespace('verify', description='verification related operations')
+
+class RegisterDto:
+    api = Namespace('register', description='registration related operations')
