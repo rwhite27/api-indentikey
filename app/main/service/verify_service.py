@@ -4,6 +4,10 @@ import pyqrcode
 
 from app.main import db
 from app.main.model.users import Users
+import face_recognition
+import os
+import numpy as np
+
 
 
 def verify(settings,data):
@@ -36,8 +40,26 @@ def verify_fingerprint(data):
 
 
 def verify_face(data):
-    db.session.add(data)
-    db.session.commit()
+
+    #We dont need to store input data.
+
+    alexis_test = face_recognition.face_encodings(
+                face_recognition.load_image_file(data['path/to/file']))[0]
+
+
+    # We are gonna encode all images here just for testing purposes
+    encodings = []
+
+    for image in os.listdir(path="./training/all/"):
+            try:
+                encodings.append(face_recognition.face_encodings(
+                    face_recognition.load_image_file(f"./training/all/{image}"))[0])
+            except Exception:
+                continue
+
+    encodings = np.array(encodings)
+
+    face_recognition.compare_faces(encodings,alexis_test)
 
 def verify_voice(data):
     db.session.add(data)

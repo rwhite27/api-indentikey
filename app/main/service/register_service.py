@@ -11,6 +11,9 @@ import json
 from app.main import db
 from app.main.model.users import Users
 import http.client, urllib.request, urllib.parse, urllib.error, base64
+import face_recognition 
+import numpy as np
+from app.main.util import Face
 
 
 def register_biometrics(settings,data):
@@ -69,9 +72,12 @@ def verify_fingerprint(data):
     return "No implementation yet"
 
 
-def verify_face(data):
-    db.session.add(data)
-    db.session.commit()
+def register_face(data):
+   
+    face = Face()
+    face.generate_encodes('path/to/file')
+
+    #We need to saving the encoding to the encodings array
 
 
 # Enrolls a newly created profile.

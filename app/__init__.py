@@ -4,7 +4,6 @@ from flask_restplus import Api
 from flask import Blueprint
 
 from .main.controller.users_controller import api as user_ns
-from .main.controller.owners_controller import api as owners_ns
 from .main.controller.verify_controller import api as verify_ns
 from .main.controller.register_controller import api as register_ns
 
@@ -17,6 +16,5 @@ api = Api(blueprint,
           )
 
 api.add_namespace(user_ns, path='/users')
-api.add_namespace(owners_ns, path='/owners')
 api.add_namespace(verify_ns, path='/verify')
 api.add_namespace(register_ns, path='/register')
