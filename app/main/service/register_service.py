@@ -13,7 +13,7 @@ from app.main.model.users import Users
 import http.client, urllib.request, urllib.parse, urllib.error, base64
 import face_recognition 
 import numpy as np
-from app.main.util import Face
+from app.main.util.face import Face
 
 
 def register_biometrics(settings,data):
@@ -22,10 +22,10 @@ def register_biometrics(settings,data):
     switcher={
                 "QR_CODE":verify_qr_code(data=data),
                 "FINGERPRINT":verify_fingerprint(data=data),
-                "FACERECOG":'hello',
+                "FACERECOG":register_face(data=data),
                 "VOICERECOG": enroll_voice(data=data)
             }
-    return switcher.get("VOICERECOG","Invalid biometric setting")
+    return switcher.get("FACERECOG","Invalid biometric setting")
     # user = Users.query.filter_by(email=data['email']).first()
     
 def verify_qr_code(data):
@@ -75,7 +75,8 @@ def verify_fingerprint(data):
 def register_face(data):
    
     face = Face()
-    face.generate_encodes('path/to/file')
+    face.generate_encodes('/home/ubuntu/api-indentikey/alexis5.jpg')
+    return True
 
     #We need to saving the encoding to the encodings array
 
@@ -91,7 +92,7 @@ def enroll_voice(data):
          profile_id = profile_string['verificationProfileId']
          #Now we save the profile string in our database. We may update the row, not create a new one, so we need to find by person's id
 
-         
+         return profile_id
          
          #-------------------TODO-----------------------------
          #Create an enrollment. To enroll a person we need to enroll the voice 3 times.
