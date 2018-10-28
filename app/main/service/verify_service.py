@@ -7,6 +7,7 @@ from app.main.model.users import Users
 import face_recognition
 import os
 import numpy as np
+from flask import jsonify
 
 
 
@@ -47,22 +48,22 @@ def verify_face(data):
     alexis_test = face_recognition.face_encodings(
                 face_recognition.load_image_file('/home/ubuntu/api-indentikey/alexis5.jpg'))
 
-    return True
 
 
     # We are gonna encode all images here just for testing purposes
     encodings = []
 
-    for image in os.listdir(path="/home/ubuntu/api-indentikey/all/"):
+    for image in os.listdir(path="/home/ubuntu/api-indentikey/training/"):
             try:
                 encodings.append(face_recognition.face_encodings(
-                    face_recognition.load_image_file(f"/home/ubuntu/api-indentikey/all/{image}"))[0])
+                    face_recognition.load_image_file(f"/home/ubuntu/api-indentikey/training/{image}"))[0])
             except Exception:
                 continue
 
     encodings = np.array(encodings)
 
     face_recognition.compare_faces(encodings,alexis_test)
+    return True
 
 def verify_voice(data):
     db.session.add(data)
