@@ -6,6 +6,13 @@ from flask_script import Manager
 
 from app.main import create_app, db
 from app.main.model import users
+from app.main.model import persons_data
+from app.main.model import persons
+from app.main.model import roles
+from app.main.model import resource_access
+from app.main.model import resources
+from app.main.model import resource_settings
+from app.main.model import verification_methods
 from app import blueprint
 
 app = create_app(os.getenv('BOILERPLATE_ENV') or 'dev')
