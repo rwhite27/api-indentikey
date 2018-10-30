@@ -1,1 +1,6 @@
 py35/
+/app/__init__.pyc
+/app/main/controller/__pycache__/
+/app/main/model/__pycache__/
+/app/main/service/__pycache__/
+/migrations/versions/__pycache__/
