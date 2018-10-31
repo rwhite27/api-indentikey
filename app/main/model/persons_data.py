@@ -10,6 +10,7 @@ class PersonsData(db.Model):
     fingerprint = db.Column(db.String(200), unique=False, nullable=False)
     face_model = db.Column(db.Text(), unique=False, nullable=False)
     voice_profile = db.Column(db.String(100), unique=False, nullable=False)
+    is_deleted = db.Column(db.Integer, unique=False,default=0,nullable=True)
     created_at = db.Column(db.DateTime, nullable=True)
     updated_at = db.Column(db.DateTime, nullable=True)
     
