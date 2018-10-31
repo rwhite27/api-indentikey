@@ -46,6 +46,52 @@ class PersonsDataDto:
         'updated_at': fields.DateTime(required=False, description='when was updated'),
     })
 
+class ResourceAccessDto:
+    api = Namespace('resource-access', description='resource-access data related operations')
+    role = api.model('resource-access', {
+        'id': fields.Integer(required=False, description='person id'),
+        'resource_id': fields.Integer(required=False, description='resource-access id'),
+        'persons_id': fields.Integer(required=False, description='resource-access id'),
+        'is_active': fields.Integer(required=False, description='is active status'),
+        'is_deleted': fields.Integer(required=False, description='delete status'),
+        'created_at': fields.DateTime(required=False, description=' when was created'),
+        'updated_at': fields.DateTime(required=False, description='when was updated'),
+    })
+
+class ResourcesDto:
+    api = Namespace('resources', description='resources data related operations')
+    role = api.model('resources', {
+        'id': fields.Integer(required=False, description='resources id'),
+        'name': fields.String(required=True, description='resources name'),
+        'main_resource_id': fields.Integer(required=False, description='resources main resource id'),
+        'is_deleted': fields.Integer(required=False, description='delete status'),
+        'created_at': fields.DateTime(required=False, description=' when was created'),
+        'updated_at': fields.DateTime(required=False, description='when was updated'),
+    })
+
+class ResourceSettingsDto:
+    api = Namespace('resource-settings', description='resource-settings data related operations')
+    role = api.model('resource-settings', {
+        'id': fields.Integer(required=False, description='resource-settings id'),
+        'threshold': fields.Integer(required=False, description='resource-settings threshold'),
+        'verification_methods_id': fields.Integer(required=False, description='verification methods id'),
+        'resources_id': fields.Integer(required=False, description='resources id'),
+        'is_deleted': fields.Integer(required=False, description='delete status'),
+        'created_at': fields.DateTime(required=False, description=' when was created'),
+        'updated_at': fields.DateTime(required=False, description='when was updated'),
+    })
+
+class VerificationMethodsDto:
+    api = Namespace('verification-methods', description='verification-methods data related operations')
+    role = api.model('verification-methods', {
+        'id': fields.Integer(required=False, description='verification-methods id'),
+        'name': fields.String(required=True, description='verification-methods name'),
+        'is_deleted': fields.Integer(required=False, description='delete status'),
+        'created_at': fields.DateTime(required=False, description=' when was created'),
+        'updated_at': fields.DateTime(required=False, description='when was updated'),
+    })
+
+
 class VerifyDto:
     api = Namespace('verify', description='verification related operations')
 
