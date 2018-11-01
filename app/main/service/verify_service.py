@@ -8,65 +8,84 @@ import face_recognition
 import os
 import numpy as np
 from flask import jsonify
+from app.main.model.persons import Persons
+from app.main.model.persons_data import PersonsData
+from flask import request
 
 
 
-def verify(settings,data):
+def verify(settings,data,files):
     
     #for setting in settings:
     switcher={
                 "QR_CODE":verify_qr_code(data=data),
-                "FINGERPRINT":verify_fingerprint(data=data),
-                "FACERECOG":verify_face(data=data)
+                "FINGERPRINT":verify_fingerprint(data=data,files=files),
+                "FACERECOG":verify_face(data=data,files=files)
             }
-    return switcher.get("FACERECOG","Invalid biometric setting")
+    return switcher.get("QR_CODE","Invalid biometric setting")
     # user = Users.query.filter_by(email=data['email']).first()
     
 def verify_qr_code(data):
-    #return data['qr_code']
-    return True
-    #Search for persons qr code biometric data
-    # person_biometric = Biometrics.query.filter_by(id=data['person_id'])
-    if person_biometric:
-        if person_biometric.qe_code == data['qr_code']:
-            return True
+    
+    persons_id = data['persons_id']
+
+    person = Persons.query.filter_by(id=persons_id).first()
+
+    if person:
+        person_data = PersonsData.query.filter_by(persons_id=person.id).first()
+
+        if person_data:
+            if (person_data.qr_code == data['qr_code']):
+                return True
+            else:
+                return False
+                
         else:
-            return False
+            return 'persons data not found'
     else:
-        return "Person's biometric data not found"
+        return 'person not found'
 
 
-def verify_fingerprint(data):
+def verify_fingerprint(data,files):
     # return Users.query.filter_by(public_id=public_id).first()
     return "No implementation yet"
 
 
-def verify_face(data):
+def verify_face(data,files):
 
+    persons_id = data['persons_id']
     #We dont need to store input data.
 
-    alexis_test = face_recognition.face_encodings(
-                face_recognition.load_image_file('/home/ubuntu/api-indentikey/alexis5.jpg'))
+    # Temporary save the image
+    image = files['file']
+    filename = image.filename
+    image.save(os.path.join('/home/ubuntu/api-indentikey/app/uploads', filename))
 
-    #To convert saved string array to np array of floats
-    and_back = encoded_image_string.split(',')
-    back_to_np = np.array(and_back)
+    encoded_image = face_recognition.face_encodings(
+                face_recognition.load_image_file('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename)))
 
-    back_to_np.astype(np.float)
+    # Lets save the id on the person's data
+    person = Persons.query.filter_by(id=persons_id).first()
 
-    # We are gonna encode all images here just for testing purposes
-    encodings = []
+    if person:
+        person_data = PersonsData.query.filter_by(persons_id=person.id).first()
 
-    # for image in os.listdir(path="/home/ubuntu/api-indentikey/training/"):
-    #         try:
-    #             encodings.append(face_recognition.face_encodings(
-    #                 face_recognition.load_image_file(f"/home/ubuntu/api-indentikey/training/{image}"))[0])
-    #         except Exception:
-    #             continue
+        if person_data:
+            #To convert saved string array to np array of floats
+            face_model_array = person_data.face_model.split(',')
+            face_model_np_array = np.array(face_model_array).astype(np.float)
+            # back_to_np.astype(np.float)
 
-    # encodings = np.array(encodings)
-
-    face_recognition.compare_faces(encodings,alexis_test)
+            #it compares to a list of arrays. We need to make the comparison one to one---Todo-----
+            face_recognition.compare_faces(face_model_np_array,encoded_image)
+            os.remove('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename))
+            return True
+                
+        else:
+            return 'persons data not found'
+    else:
+        return 'person not found'
+    
     return True
 
 def verify_voice(data):
