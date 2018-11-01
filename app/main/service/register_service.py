@@ -22,8 +22,6 @@ from flask import request
 import numpy as np
 from werkzeug.utils import secure_filename
 
-UPLOAD_FOLDER = '/home/ubuntu/api-indentikey/uploads'
-
 
 def register_biometrics(settings,data):
     
@@ -111,17 +109,14 @@ def register_face(data):
 
     # Temporary save the image
     image = request.files['file']
-    filename = secure_filename(image.filename)
-    return image.save(os.path.join(UPLOAD_FOLDER, filename))
-
+    filename = image.filename
+    image.save(os.path.join('/home/ubuntu/api-indentikey/app/uploads', filename))
 
     encoded_image = face_recognition.face_encodings(
-                face_recognition.load_image_file(face_image))
+                face_recognition.load_image_file('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename)))
     
     encoded_image_array = np.array(encoded_image[0])
     encoded_image_string = ','.join(str(e) for e in encoded_image_array)
-
-    return encoded_image_string
 
     # Lets save the id on the person's data
     person = Persons.query.filter_by(id=persons_id).first()
@@ -132,6 +127,8 @@ def register_face(data):
         if person_data:
             person_data.face_model = encoded_image_string
             db.session.commit()
+            os.remove('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename))
+            return encoded_image_string
                 
         else:
             return 'persons data not found'
