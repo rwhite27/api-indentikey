@@ -4,3 +4,4 @@ py35/
 /app/main/model/__pycache__/
 /app/main/service/__pycache__/
 /migrations/versions/__pycache__/
+/app/uploads/
