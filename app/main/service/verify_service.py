@@ -48,19 +48,23 @@ def verify_face(data):
     alexis_test = face_recognition.face_encodings(
                 face_recognition.load_image_file('/home/ubuntu/api-indentikey/alexis5.jpg'))
 
+    #To convert saved string array to np array of floats
+    and_back = encoded_image_string.split(',')
+    back_to_np = np.array(and_back)
 
+    back_to_np.astype(np.float)
 
     # We are gonna encode all images here just for testing purposes
     encodings = []
 
-    for image in os.listdir(path="/home/ubuntu/api-indentikey/training/"):
-            try:
-                encodings.append(face_recognition.face_encodings(
-                    face_recognition.load_image_file(f"/home/ubuntu/api-indentikey/training/{image}"))[0])
-            except Exception:
-                continue
+    # for image in os.listdir(path="/home/ubuntu/api-indentikey/training/"):
+    #         try:
+    #             encodings.append(face_recognition.face_encodings(
+    #                 face_recognition.load_image_file(f"/home/ubuntu/api-indentikey/training/{image}"))[0])
+    #         except Exception:
+    #             continue
 
-    encodings = np.array(encodings)
+    # encodings = np.array(encodings)
 
     face_recognition.compare_faces(encodings,alexis_test)
     return True

@@ -44,7 +44,13 @@ pip3 freeze > requirements.txt
 
 yum install MySQL-python
 
+#### In Ubuntu 18.04 for mysql to work
 
+pip3 install flask_migrate
+
+#### Install  php7.2-mysql for ubuntu
+
+sudo apt install php7.2-mysql
 
 
 
