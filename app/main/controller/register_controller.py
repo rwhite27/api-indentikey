@@ -16,5 +16,5 @@ class PersonRegistration(Resource):
 
         #Se supone que aqui hay que mandarle el settings del recurso y la data que se va a mandar.
         data = request.form
-        settings = request.json
+        settings = request.form
         return register_biometrics(settings=settings,data=data)

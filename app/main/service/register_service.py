@@ -19,6 +19,10 @@ from app.main.model.persons_data import PersonsData
 from flask import jsonify
 import base64
 from flask import request
+import numpy as np
+from werkzeug.utils import secure_filename
+
+UPLOAD_FOLDER = '/home/ubuntu/api-indentikey/uploads'
 
 
 def register_biometrics(settings,data):
@@ -30,7 +34,7 @@ def register_biometrics(settings,data):
                 "FACERECOG":register_face(data=data),
                 "VOICERECOG": enroll_voice(data=data)
             }
-    return switcher.get("VOICERECOG","Invalid biometric setting")
+    return switcher.get("FACERECOG","Invalid biometric setting")
     # user = Users.query.filter_by(email=data['email']).first()
     
 def verify_qr_code(data):
@@ -97,8 +101,43 @@ def verify_fingerprint(data):
 
 def register_face(data):
    
+    persons_id = data['persons_id']
     face = Face()
-    # face.generate_encodes('/home/ubuntu/api-indentikey/alexis5.jpg')
+    # image = request.files['face']
+    # face_image = image.read()
+    # encoded_image = face_recognition.face_encodings(
+    #             face_recognition.load_image_file('/home/ubuntu/api-indentikey/alexis5.jpg'))
+
+
+    # Temporary save the image
+    image = request.files['file']
+    filename = secure_filename(image.filename)
+    return image.save(os.path.join(UPLOAD_FOLDER, filename))
+
+
+    encoded_image = face_recognition.face_encodings(
+                face_recognition.load_image_file(face_image))
+    
+    encoded_image_array = np.array(encoded_image[0])
+    encoded_image_string = ','.join(str(e) for e in encoded_image_array)
+
+    return encoded_image_string
+
+    # Lets save the id on the person's data
+    person = Persons.query.filter_by(id=persons_id).first()
+
+    if person:
+        person_data = PersonsData.query.filter_by(persons_id=person.id).first()
+
+        if person_data:
+            person_data.face_model = encoded_image_string
+            db.session.commit()
+                
+        else:
+            return 'persons data not found'
+    else:
+        return 'person not found'
+    
     return True
 
     #We need to saving the encoding to the encodings array
@@ -126,7 +165,7 @@ def enroll_voice(data):
             if person_data:
                 person_data.voice_profile = profile_id
                 db.session.commit()
-                enroll(profile_id)
+                # enroll(profile_id)
                 
             else:
                 return 'persons data not found'
@@ -161,34 +200,34 @@ def create_voice_profile():
     return voice_profile.decode('utf-8')
     conn.close()
 
-def enroll(profile_id):
-        #Create an enrollment. To enroll a person we need to enroll the voice 3 times.
-         headers = {
-            # Request headers
-            'Content-Type': 'multipart/form-data',
-            'Ocp-Apim-Subscription-Key': '9cad2c86ad8e4220ae02edc989424cac',
-         }
+# def enroll(profile_id):
+#         #Create an enrollment. To enroll a person we need to enroll the voice 3 times.
+#          headers = {
+#             # Request headers
+#             'Content-Type': 'multipart/form-data',
+#             'Ocp-Apim-Subscription-Key': '9cad2c86ad8e4220ae02edc989424cac',
+#          }
 
-         params = urllib.parse.urlencode({
-         })
+#          params = urllib.parse.urlencode({
+#          })
 
-         #Lets enroll the person 3 times. We could use 3 diferent voice clips or just one.
+#          #Lets enroll the person 3 times. We could use 3 diferent voice clips or just one.
 
 
-         # Here we open a 16k rate, 16 bit, mono WAV audio file. We need to check how files are received in flask.
-        #  body = open('/home/ubuntu/api-indentikey/rafaelp5_16k_16bit_mono.wav', 'rb')
-         recordings = request.files['recordings'][0]
+#          # Here we open a 16k rate, 16 bit, mono WAV audio file. We need to check how files are received in flask.
+#         #  body = open('/home/ubuntu/api-indentikey/rafaelp5_16k_16bit_mono.wav', 'rb')
+#          recordings = request.files['recordings'][0]
 
-         return recordings
+#          return recordings
 
-         #Need to make 3 request per profile right here. We need to be able to handle 3 recording uploads
-         for recording in recordings:
-            body = recording.read()
+#          #Need to make 3 request per profile right here. We need to be able to handle 3 recording uploads
+#          for recording in recordings:
+#             body = recording.read()
 
-            conn = http.client.HTTPSConnection('westus.api.cognitive.microsoft.com')
-            conn.request("POST", "/spid/v1.0/verificationProfiles/{}/enroll?%s".format(profile_id) %
-                    params, body, headers)
-            response = conn.getresponse()
-            data = response.read()
-            return data.decode('utf-8')
-            conn.close()
+#             conn = http.client.HTTPSConnection('westus.api.cognitive.microsoft.com')
+#             conn.request("POST", "/spid/v1.0/verificationProfiles/{}/enroll?%s".format(profile_id) %
+#                     params, body, headers)
+#             response = conn.getresponse()
+#             data = response.read()
+#             return data.decode('utf-8')
+#             conn.close()
