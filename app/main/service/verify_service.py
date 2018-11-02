@@ -11,22 +11,26 @@ from flask import jsonify
 from app.main.model.persons import Persons
 from app.main.model.persons_data import PersonsData
 from flask import request
+import json
+from pydub import AudioSegment
+import http.client, urllib.request, urllib.parse, urllib.error, base64
 
 
 
-def verify(settings,data,files):
+def verify(settings,data):
     
     #for setting in settings:
     switcher={
                 "QR_CODE":verify_qr_code(data=data),
-                "FINGERPRINT":verify_fingerprint(data=data,files=files),
-                "FACERECOG":verify_face(data=data,files=files)
+                "FINGERPRINT":verify_fingerprint(data=data),
+                "FACERECOG":verify_face(data=data),
+                "VOICERECOG":verify_voice(data=data)
             }
-    return switcher.get("QR_CODE","Invalid biometric setting")
+    return switcher.get("VOICERECOG","Invalid biometric setting")
     # user = Users.query.filter_by(email=data['email']).first()
     
 def verify_qr_code(data):
-    
+    return 'hello'
     persons_id = data['persons_id']
 
     person = Persons.query.filter_by(id=persons_id).first()
@@ -46,18 +50,19 @@ def verify_qr_code(data):
         return 'person not found'
 
 
-def verify_fingerprint(data,files):
+def verify_fingerprint(data):
     # return Users.query.filter_by(public_id=public_id).first()
     return "No implementation yet"
 
 
-def verify_face(data,files):
+def verify_face(data):
 
+    return 'hello'
     persons_id = data['persons_id']
     #We dont need to store input data.
 
     # Temporary save the image
-    image = files['file']
+    image = data['file']
     filename = image.filename
     image.save(os.path.join('/home/ubuntu/api-indentikey/app/uploads', filename))
 
@@ -89,5 +94,67 @@ def verify_face(data,files):
     return True
 
 def verify_voice(data):
-    db.session.add(data)
-    db.session.commit()
+
+    persons_id = data['persons_id']
+
+    # Temporary save the image
+    voice = data['file']
+    filename = voice.filename
+    voice.save(os.path.join('/home/ubuntu/api-indentikey/app/uploads', filename))
+
+    convert_audio_ogg(filename)
+
+    person = Persons.query.filter_by(id=persons_id).first()
+
+    if person:
+        person_data = PersonsData.query.filter_by(persons_id=person.id).first()
+
+        if person_data:
+            return verify_azure(person_data.voice_profile,filename)
+        else:
+            return 'persons data not found'
+    else:
+        return 'person not found'
+
+def verify_azure(profile_id,filename):
+    headers = {
+        # Request headers
+        'Content-Type': 'application/octet-stream',
+        'Ocp-Apim-Subscription-Key': '9cad2c86ad8e4220ae02edc989424cac',
+    }
+
+    params = urllib.parse.urlencode({
+    })
+
+    filename_split = filename.split('.')[0]
+    body = open('/home/ubuntu/api-indentikey/app/uploads/{}.wav'.format(filename_split), 'rb')
+
+    conn = http.client.HTTPSConnection('westus.api.cognitive.microsoft.com')
+    conn.request("POST", "/spid/v1.0/verify?verificationProfileId={}&{}".format(profile_id,params),body, headers)
+    response = conn.getresponse()
+    data = response.read()
+    confirmation = json.loads(data.decode('utf-8'));
+
+    if 'result' in confirmation:
+        if(confirmation['result'] == 'Accept'):
+            os.remove('/home/ubuntu/api-indentikey/app/uploads/{}.wav'.format(filename_split))
+            return True
+        if(confirmation['result'] == 'Reject'):
+            os.remove('/home/ubuntu/api-indentikey/app/uploads/{}.wav'.format(filename_split))
+            return False
+
+    conn.close()
+
+def convert_audio_ogg(filename):
+
+    #Convert Audio
+    sound_ogg = AudioSegment.from_file('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename), format="ogg")
+
+    modify_frame_rate = sound_ogg.set_frame_rate(16000)
+
+    modify_sample_width = modify_frame_rate.set_sample_width(2)
+
+    filename_split = filename.split('.')[0]
+    modify_sample_width.export("/home/ubuntu/api-indentikey/app/uploads/{}.wav".format(filename_split),format="wav")
+
+    os.remove('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename))
