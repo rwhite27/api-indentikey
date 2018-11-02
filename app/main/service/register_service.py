@@ -18,21 +18,22 @@ from app.main.model.persons import Persons
 from app.main.model.persons_data import PersonsData
 from flask import jsonify
 import base64
-from flask import request
 import numpy as np
 from werkzeug.utils import secure_filename
+from pydub import AudioSegment
 
 
 def register_biometrics(settings,data):
     
+    #This switch is not working properly
     # for setting in settings:
     switcher={
                 "QR_CODE":verify_qr_code(data=data),
                 "FINGERPRINT":verify_fingerprint(data=data),
-                "FACERECOG":register_face(data=data),
+                # "FACERECOG":register_face(data=data),
                 "VOICERECOG": enroll_voice(data=data)
             }
-    return switcher.get("FACERECOG","Invalid biometric setting")
+    return switcher.get("VOICERECOG","Invalid biometric setting")
     # user = Users.query.filter_by(email=data['email']).first()
     
 def verify_qr_code(data):
@@ -108,7 +109,7 @@ def register_face(data):
 
 
     # Temporary save the image
-    image = request.files['file']
+    image = data['file']
     filename = image.filename
     image.save(os.path.join('/home/ubuntu/api-indentikey/app/uploads', filename))
 
@@ -142,7 +143,7 @@ def register_face(data):
 
 # Enrolls a newly created profile.
 def enroll_voice(data):
-     count = 0
+     
      #Create first an enrollment profile
      profile_string = json.loads(create_voice_profile())
 
@@ -152,6 +153,7 @@ def enroll_voice(data):
          #Now we save the profile string in our database. We may update the row, not create a new one, so we need to find by person's id
          
          persons_id = data['persons_id']
+         convert_audio_ogg(data)
 
         # Lets save the id on the person's data
          person = Persons.query.filter_by(id=persons_id).first()
@@ -162,7 +164,7 @@ def enroll_voice(data):
             if person_data:
                 person_data.voice_profile = profile_id
                 db.session.commit()
-                # enroll(profile_id)
+                return enroll(profile_id)
                 
             else:
                 return 'persons data not found'
@@ -197,34 +199,67 @@ def create_voice_profile():
     return voice_profile.decode('utf-8')
     conn.close()
 
-# def enroll(profile_id):
-#         #Create an enrollment. To enroll a person we need to enroll the voice 3 times.
-#          headers = {
-#             # Request headers
-#             'Content-Type': 'multipart/form-data',
-#             'Ocp-Apim-Subscription-Key': '9cad2c86ad8e4220ae02edc989424cac',
-#          }
+def enroll(profile_id):
 
-#          params = urllib.parse.urlencode({
-#          })
+        count = 0
+        
+        
+        while count < 3:
 
-#          #Lets enroll the person 3 times. We could use 3 diferent voice clips or just one.
+             #Create an enrollment. To enroll a person we need to enroll the voice 3 times.
+            headers = {
+                # Request headers
+                'Content-Type': 'multipart/form-data',
+                'Ocp-Apim-Subscription-Key': '9cad2c86ad8e4220ae02edc989424cac',
+            }
 
+            params = urllib.parse.urlencode({
+            })
+            #Lets enroll the person 3 times. We could use 3 diferent voice clips or just one.
+            # Here we open a 16k rate, 16 bit, mono WAV audio file. We need to check how files are received in flask.
+            body = open('/home/ubuntu/api-indentikey/app/uploads/recordings[{}].wav'.format(count), 'rb')
 
-#          # Here we open a 16k rate, 16 bit, mono WAV audio file. We need to check how files are received in flask.
-#         #  body = open('/home/ubuntu/api-indentikey/rafaelp5_16k_16bit_mono.wav', 'rb')
-#          recordings = request.files['recordings'][0]
+            conn = http.client.HTTPSConnection('westus.api.cognitive.microsoft.com')
+            conn.request("POST", "/spid/v1.0/verificationProfiles/{}/enroll?%s".format(profile_id) %
+                params, body, headers)
+            response = conn.getresponse()
+            data = response.read()
+            confirmation = json.loads(data.decode('utf-8'))
 
-#          return recordings
+            if 'enrollmentStatus' in confirmation:
 
-#          #Need to make 3 request per profile right here. We need to be able to handle 3 recording uploads
-#          for recording in recordings:
-#             body = recording.read()
+                if(confirmation['enrollmentStatus'] == 'Enrolled'):
+                    os.remove('/home/ubuntu/api-indentikey/app/uploads/recordings[{}].wav'.format(count))
+                    return confirmation['enrollmentStatus']
+                if(confirmation['enrollmentStatus'] == 'Enrolling'):
+                    os.remove('/home/ubuntu/api-indentikey/app/uploads/recordings[{}].wav'.format(count))
+            
+            if 'error' in confirmation:
+                
+                if(confirmation['error']['message'] == 'TooNoisy'):
+                    return confirmation['error']['message']
+            
+            conn.close()
+            count += 1
 
-#             conn = http.client.HTTPSConnection('westus.api.cognitive.microsoft.com')
-#             conn.request("POST", "/spid/v1.0/verificationProfiles/{}/enroll?%s".format(profile_id) %
-#                     params, body, headers)
-#             response = conn.getresponse()
-#             data = response.read()
-#             return data.decode('utf-8')
-#             conn.close()
+def convert_audio_ogg(data):
+     #We need to save the file first temporarily
+     count = 0
+
+     while count < 3:
+
+         audio = data['recordings[{}]'.format(count)]
+         filename = audio.filename
+         audio.save(os.path.join('/home/ubuntu/api-indentikey/app/uploads','recordings[{}].ogg'.format(count)))
+
+         #Convert Audio
+         sound_ogg = AudioSegment.from_file('/home/ubuntu/api-indentikey/app/uploads/recordings[{}].ogg'.format(count), format="ogg")
+
+         modify_frame_rate = sound_ogg.set_frame_rate(16000)
+
+         modify_sample_width = modify_frame_rate.set_sample_width(2)
+
+         modify_sample_width.export("/home/ubuntu/api-indentikey/app/uploads/recordings[{}].wav".format(count),format="wav")
+
+         os.remove('/home/ubuntu/api-indentikey/app/uploads/recordings[{}].ogg'.format(count))
+         count += 1
