@@ -15,6 +15,12 @@ class PersonRegistration(Resource):
         """Verify a person """
 
         #Se supone que aqui hay que mandarle el settings del recurso y la data que se va a mandar.
-        data = request.form
-        settings = request.form
+        if request.files:
+            data = request.form.copy()
+            data.update(request.files)
+        else:
+            data = request.form
+        
+        # return str(data)
+        settings = request.json
         return register_biometrics(settings=settings,data=data)
