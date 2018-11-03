@@ -21,28 +21,13 @@ import base64
 import numpy as np
 from werkzeug.utils import secure_filename
 from pydub import AudioSegment
-
-
-def register_biometrics(settings,data):
+import requests
     
-    #This switch is not working properly
-    # for setting in settings:
-    switcher={
-                "QR_CODE":verify_qr_code(data=data),
-                "FINGERPRINT":verify_fingerprint(data=data),
-                # "FACERECOG":register_face(data=data),
-                "VOICERECOG": enroll_voice(data=data)
-            }
-    return switcher.get("VOICERECOG","Invalid biometric setting")
-    # user = Users.query.filter_by(email=data['email']).first()
-    
-def verify_qr_code(data):
+def register_qr_code(data):
 
     randomId = str(uuid.uuid4())
 
     persons_id = data['persons_id']
-
-    return persons_id
 
     # Lets save the id on the person's data
     person = Persons.query.filter_by(id=persons_id).first()
@@ -93,7 +78,7 @@ def verify_qr_code(data):
     # server.quit()
 
 
-def verify_fingerprint(data):
+def register_fingerprint(data):
     # return Users.query.filter_by(public_id=public_id).first()
     return "No implementation yet"
 
@@ -102,11 +87,6 @@ def register_face(data):
    
     persons_id = data['persons_id']
     face = Face()
-    # image = request.files['face']
-    # face_image = image.read()
-    # encoded_image = face_recognition.face_encodings(
-    #             face_recognition.load_image_file('/home/ubuntu/api-indentikey/alexis5.jpg'))
-
 
     # Temporary save the image
     image = data['file']
@@ -128,6 +108,9 @@ def register_face(data):
         if person_data:
             person_data.face_model = encoded_image_string
             db.session.commit()
+
+            ##Send data to flask api here
+            return send_register_face(filename)
             os.remove('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename))
             return encoded_image_string
                 
@@ -140,10 +123,16 @@ def register_face(data):
 
     #We need to saving the encoding to the encodings array
 
+def send_register_face(filename):
+    
+    body = open('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename), 'rb')
+
+    response = requests.post('http://ec2-52-21-122-184.compute-1.amazonaws.com:8080/register', files=dict(file=body))
+    return response
 
 # Enrolls a newly created profile.
-def enroll_voice(data):
-     
+def register_voice(data):
+    
      #Create first an enrollment profile
      profile_string = json.loads(create_voice_profile())
 
