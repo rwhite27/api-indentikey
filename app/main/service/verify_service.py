@@ -14,11 +14,13 @@ from flask import request
 import json
 from pydub import AudioSegment
 import http.client, urllib.request, urllib.parse, urllib.error, base64
+import requests
 
 
 
 def verify(settings,data):
     
+    #Poner el switch en el controller en vez de en el servicio
     #for setting in settings:
     switcher={
                 "QR_CODE":verify_qr_code(data=data),
@@ -26,7 +28,7 @@ def verify(settings,data):
                 "FACERECOG":verify_face(data=data),
                 "VOICERECOG":verify_voice(data=data)
             }
-    return switcher.get("VOICERECOG","Invalid biometric setting")
+    return switcher.get("FACERECOG","Invalid biometric setting")
     # user = Users.query.filter_by(email=data['email']).first()
     
 def verify_qr_code(data):
@@ -57,7 +59,6 @@ def verify_fingerprint(data):
 
 def verify_face(data):
 
-    return 'hello'
     persons_id = data['persons_id']
     #We dont need to store input data.
 
@@ -82,9 +83,9 @@ def verify_face(data):
             # back_to_np.astype(np.float)
 
             #it compares to a list of arrays. We need to make the comparison one to one---Todo-----
-            face_recognition.compare_faces(face_model_np_array,encoded_image)
+            results = send_verify_face(filename)
             os.remove('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename))
-            return True
+            return results
                 
         else:
             return 'persons data not found'
@@ -93,8 +94,15 @@ def verify_face(data):
     
     return True
 
-def verify_voice(data):
+def send_verify_face(filename):
+    body = open('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename), 'rb')
 
+    response = requests.post('http://ec2-52-21-122-184.compute-1.amazonaws.com:8080/verify', files=dict(file=body))
+    return response
+
+
+def verify_voice(data):
+    return 'hello'
     persons_id = data['persons_id']
 
     # Temporary save the image

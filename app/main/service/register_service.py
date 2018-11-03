@@ -110,9 +110,9 @@ def register_face(data):
             db.session.commit()
 
             ##Send data to flask api here
-            return send_register_face(filename)
+            results = send_register_face(filename)
             os.remove('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename))
-            return encoded_image_string
+            return results
                 
         else:
             return 'persons data not found'
