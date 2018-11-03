@@ -14,8 +14,11 @@ class PersonVerification(Resource):
     def post(self):
         """Verify a person """
 
-        #Se supone que aqui hay que mandarle el settings del recurso y la data que se va a mandar.
-        data = request.form
-        files =  request.files
+        #Podemos hacer el switch aqui en vez de en los servicios
+        if request.files:
+            data = request.form.copy()
+            data.update(request.files)
+        else:
+            data = request.form
         settings = request.json
-        return verify(settings=settings,data=data,files=files)
+        return verify(settings=settings,data=data)
