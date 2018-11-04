@@ -79,8 +79,60 @@ def register_qr_code(data):
 
 
 def register_fingerprint(data):
-    # return Users.query.filter_by(public_id=public_id).first()
-    return "No implementation yet"
+    persons_id = data['persons_id']
+
+    count = 0
+
+    while count < 3:
+        image = data['fingerprint[{}]'.format(count)]
+        filename = image.filename
+        
+        image.save(os.path.join('/home/ubuntu/api-indentikey/app/uploads','fingerprint[{}].bmp'.format(count)))
+        filepath = '/home/ubuntu/api-indentikey/app/uploads/fingerprint[{}].bmp'.format(count)
+
+        if (count == 0):
+            fingerprint = filepath
+        else:
+            fingerprint = fingerprint + ',' + str(filepath)
+        
+        count += 1
+
+    # Lets save the id on the person's data
+    person = Persons.query.filter_by(id=persons_id).first()
+
+    if person:
+        person_data = PersonsData.query.filter_by(persons_id=person.id).first()
+
+        if person_data:
+            person_data.face_model = fingerprint
+            db.session.commit()
+
+            ##Send data to flask api here
+            results = send_register_fingerprint(filename,persons_id)
+            return results
+                
+        else:
+            return 'persons data not found'
+    else:
+        return 'person not found'
+    
+    return True
+
+def send_register_fingerprint(filename,persons_id):
+
+    body_0 = open('/home/ubuntu/api-indentikey/app/uploads/fingerprint[0].bmp', 'rb')
+    body_1 = open('/home/ubuntu/api-indentikey/app/uploads/fingerprint[1].bmp', 'rb')
+    body_2 = open('/home/ubuntu/api-indentikey/app/uploads/fingerprint[2].bmp', 'rb')
+    
+
+    response = requests.post('http://ec2-52-21-122-184.compute-1.amazonaws.com:5000/register/{}'.format(persons_id),files=dict(fingerprint0=body_0,fingerprint1=body_1,fingerprint2=body_2))
+
+    os.remove('/home/ubuntu/api-indentikey/app/uploads/fingerprint[0].bmp')
+    os.remove('/home/ubuntu/api-indentikey/app/uploads/fingerprint[1].bmp')
+    os.remove('/home/ubuntu/api-indentikey/app/uploads/fingerprint[2].bmp')
+
+
+    return response
 
 
 def register_face(data):

@@ -28,7 +28,7 @@ def verify(settings,data):
                 "FACERECOG":verify_face(data=data),
                 "VOICERECOG":verify_voice(data=data)
             }
-    return switcher.get("FACERECOG","Invalid biometric setting")
+    return switcher.get("FINGERPRINT","Invalid biometric setting")
     # user = Users.query.filter_by(email=data['email']).first()
     
 def verify_qr_code(data):
@@ -53,12 +53,42 @@ def verify_qr_code(data):
 
 
 def verify_fingerprint(data):
-    # return Users.query.filter_by(public_id=public_id).first()
-    return "No implementation yet"
+    persons_id = data['persons_id']
+    #We dont need to store input data.
+
+    # Temporary save the image
+    image = data['file']
+    filename = image.filename
+    image.save(os.path.join('/home/ubuntu/api-indentikey/app/uploads', filename))
+
+    # Lets save the id on the person's data
+    person = Persons.query.filter_by(id=persons_id).first()
+
+    if person:
+        person_data = PersonsData.query.filter_by(persons_id=person.id).first()
+
+        if person_data:
+            #it compares to a list of arrays. We need to make the comparison one to one---Todo-----
+            results = send_verify_fingerprint(filename,persons_id)
+            os.remove('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename))
+            return results
+                
+        else:
+            return 'persons data not found'
+    else:
+        return 'person not found'
+    
+    return True
+
+def send_verify_fingerprint(filename,persons_id):
+    body = open('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename), 'rb')
+
+    response = requests.post('http://ec2-52-21-122-184.compute-1.amazonaws.com:5000/verify/{}'.format(persons_id), files=dict(file=body))
+    return response
 
 
 def verify_face(data):
-
+    return 'hello'
     persons_id = data['persons_id']
     #We dont need to store input data.
 
