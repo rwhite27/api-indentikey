@@ -10,6 +10,7 @@ def create(data):
     new_item = Resources(
         name=data['name'],
         main_resource_id=data['main_resource_id'],
+        code = str(uuid.uuid4()),
         created_at = datetime.datetime.utcnow()
     )
     save_changes(new_item)
