@@ -2,7 +2,7 @@ from flask import request
 from flask_restplus import Resource
 
 from ..util.dto import VerifyDto
-from ..service.verify_service import verify
+from ..service.verify_service import verify_qr_code,verify_fingerprint,verify_face,verify_voice
 
 api = VerifyDto.api
 
@@ -20,5 +20,18 @@ class PersonVerification(Resource):
             data.update(request.files)
         else:
             data = request.form
-        settings = request.json
-        return verify(settings=settings,data=data)
+
+        #Need to make a for in statement so that the verification passes through every function depending on settings
+        option = 'VOICERECOG'
+
+        if option == 'QR_CODE':
+           return  verify_qr_code(data=data)
+        elif option == 'FINGERPRINT':
+           return  verify_fingerprint(data=data)
+        elif option == 'FACERECOG':
+           return  verify_face(data=data)
+        elif option == 'VOICERECOG':
+           return verify_voice(data=data)
+        else:
+            return 'Invalid verification'
+        

@@ -16,123 +16,62 @@ from pydub import AudioSegment
 import http.client, urllib.request, urllib.parse, urllib.error, base64
 import requests
 
-
-
-def verify(settings,data):
-    
-    #Poner el switch en el controller en vez de en el servicio
-    #for setting in settings:
-    switcher={
-                "QR_CODE":verify_qr_code(data=data),
-                "FINGERPRINT":verify_fingerprint(data=data),
-                "FACERECOG":verify_face(data=data),
-                "VOICERECOG":verify_voice(data=data)
-            }
-    return switcher.get("FINGERPRINT","Invalid biometric setting")
-    # user = Users.query.filter_by(email=data['email']).first()
-    
+#Main function for qr_code verification
 def verify_qr_code(data):
-    return 'hello'
-    persons_id = data['persons_id']
+    
+    qr_code = data['qr_code']
 
-    person = Persons.query.filter_by(id=persons_id).first()
+    person_data = PersonsData.query.filter_by(qr_code=qr_code).first()
 
-    if person:
-        person_data = PersonsData.query.filter_by(persons_id=person.id).first()
-
-        if person_data:
-            if (person_data.qr_code == data['qr_code']):
-                return True
-            else:
-                return False
-                
+    if person_data:
+        if (person_data.qr_code == qr_code):
+            return person_data.persons_id
         else:
-            return 'persons data not found'
+            return False
     else:
-        return 'person not found'
+        return 'Person Data not found related to this QR Code'
 
-
+#Main function for fingerprint verification
 def verify_fingerprint(data):
-    persons_id = data['persons_id']
-    #We dont need to store input data.
-
+    
     # Temporary save the image
     image = data['file']
     filename = image.filename
     image.save(os.path.join('/home/ubuntu/api-indentikey/app/uploads', filename))
-
-    # Lets save the id on the person's data
-    person = Persons.query.filter_by(id=persons_id).first()
-
-    if person:
-        person_data = PersonsData.query.filter_by(persons_id=person.id).first()
-
-        if person_data:
-            #it compares to a list of arrays. We need to make the comparison one to one---Todo-----
-            results = send_verify_fingerprint(filename,persons_id)
-            os.remove('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename))
-            return results
-                
-        else:
-            return 'persons data not found'
-    else:
-        return 'person not found'
     
-    return True
+    results = send_verify_fingerprint(filename)
+    os.remove('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename))
+    return results
+                
 
-def send_verify_fingerprint(filename,persons_id):
+def send_verify_fingerprint(filename):
     body = open('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename), 'rb')
 
-    response = requests.post('http://ec2-52-21-122-184.compute-1.amazonaws.com:5000/verify/{}'.format(persons_id), files=dict(file=body))
+    response = requests.post('http://ec2-52-21-122-184.compute-1.amazonaws.com:5000/verify', files=dict(file=body))
     return response
 
 
+# Main function for face verification
 def verify_face(data):
-    return 'hello'
-    persons_id = data['persons_id']
-    #We dont need to store input data.
-
+    
     # Temporary save the image
     image = data['file']
     filename = image.filename
     image.save(os.path.join('/home/ubuntu/api-indentikey/app/uploads', filename))
-
-    encoded_image = face_recognition.face_encodings(
-                face_recognition.load_image_file('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename)))
-
-    # Lets save the id on the person's data
-    person = Persons.query.filter_by(id=persons_id).first()
-
-    if person:
-        person_data = PersonsData.query.filter_by(persons_id=person.id).first()
-
-        if person_data:
-            #To convert saved string array to np array of floats
-            face_model_array = person_data.face_model.split(',')
-            face_model_np_array = np.array(face_model_array).astype(np.float)
-            # back_to_np.astype(np.float)
-
-            #it compares to a list of arrays. We need to make the comparison one to one---Todo-----
-            results = send_verify_face(filename)
-            os.remove('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename))
-            return results
+            
+    results = send_verify_face(filename)
+    os.remove('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename))
+    return results
                 
-        else:
-            return 'persons data not found'
-    else:
-        return 'person not found'
-    
-    return True
-
 def send_verify_face(filename):
     body = open('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename), 'rb')
 
     response = requests.post('http://ec2-52-21-122-184.compute-1.amazonaws.com:8080/verify', files=dict(file=body))
     return response
 
-
+#Main function for voice verification
 def verify_voice(data):
-    return 'hello'
+    
     persons_id = data['persons_id']
 
     # Temporary save the image
