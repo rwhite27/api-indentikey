@@ -81,8 +81,8 @@ def save_changes(data):
 
 def authenticate(username,password):
     user = Persons.query.filter_by(email=username).first()
-    # role = Roles.query.filter_by(id=user.roles_id).first()
-    if user and safe_str_cmp(user.password.encode('utf-8'), password.encode('utf-8')):
+    role = Roles.query.filter_by(id=user.roles_id).first()
+    if user and role.name == 'Admin' and safe_str_cmp(user.password.encode('utf-8'), password.encode('utf-8')):
         return user
 
 def identity(payload):
