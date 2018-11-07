@@ -3,6 +3,7 @@ from flask_restplus import Resource
 
 from ..util.dto import PersonsDto
 from ..service.persons_service import create, get_all, get_one,update,delete
+from flask_jwt import JWT, jwt_required, current_identity
 
 api = PersonsDto.api
 _person= PersonsDto.role
@@ -11,6 +12,7 @@ _person= PersonsDto.role
 @api.route('/')
 class PersonsList(Resource):
     @api.doc('list_of_registered_persons')
+    @jwt_required()
     @api.marshal_list_with(_person, envelope='data')
     def get(self):
         """List all registered persons"""

@@ -3,6 +3,8 @@ import datetime
 
 from app.main import db
 from app.main.model.persons import Persons
+from app.main.model.roles import Roles
+from werkzeug.security import safe_str_cmp
 
 
 def create(data):
@@ -76,3 +78,13 @@ def delete(id):
 def save_changes(data):
     db.session.add(data)
     db.session.commit()
+
+def authenticate(username,password):
+    user = Persons.query.filter_by(email=username).first()
+    # role = Roles.query.filter_by(id=user.roles_id).first()
+    if user and safe_str_cmp(user.password.encode('utf-8'), password.encode('utf-8')):
+        return user
+
+def identity(payload):
+    user_id = payload['identity']
+    return Persons.query.get(user_id)
