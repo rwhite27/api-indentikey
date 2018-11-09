@@ -3,6 +3,9 @@ import datetime
 
 from app.main import db
 from app.main.model.resources import Resources
+from app.main.model.resource_settings import ResourceSettings
+from app.main.model.verification_methods import VerificationMethods
+
 
 
 def create(data):
@@ -71,3 +74,19 @@ def delete(id):
 def save_changes(data):
     db.session.add(data)
     db.session.commit()
+
+def get_all_resouce_settings(id):
+    resource = Resources.query.filter_by(id=id).first()
+    if resource:
+        resource_settings = ResourceSettings.query.filter_by(resources_id=resource.id).all()
+        if resource_settings:
+            results = {}
+            for resource_setting in resource_settings:
+                method = VerificationMethods.query.filter_by(id=resource_setting.verification_methods_id).first()
+                results[method.name] = resource_setting.threshold
+            
+            return results
+        else:
+            return False
+    else:
+        return 'No resource found'
