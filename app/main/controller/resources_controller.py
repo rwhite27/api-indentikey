@@ -2,7 +2,7 @@ from flask import request
 from flask_restplus import Resource
 
 from ..util.dto import ResourcesDto
-from ..service.resources_service import create, get_all, get_one,update,delete
+from ..service.resources_service import create, get_all, get_one,update,delete, get_all_resouce_settings
 
 api = ResourcesDto.api
 _resources= ResourcesDto.role
@@ -51,3 +51,10 @@ class Persons(Resource):
     def delete(self,id):
         """get a Resource Access given its identifier and delete"""
         return delete(id=id)
+
+@api.route('/<id>/resource-settings')
+@api.param('id', 'The Resource Access identifier')
+class ResourceSettings(Resource):
+    @api.doc('get all the resource settings of a resouce')
+    def get(self,id):
+        return get_all_resouce_settings(id=id)
