@@ -5,6 +5,7 @@ from app.main import db
 from app.main.model.persons import Persons
 from app.main.model.roles import Roles
 from werkzeug.security import safe_str_cmp
+from flask import session
 
 
 def create(data):
@@ -88,3 +89,13 @@ def authenticate(username,password):
 def identity(payload):
     user_id = payload['identity']
     return Persons.query.get(user_id)
+
+def login(email,password):
+    user = Persons.query.filter_by(email=email).first()
+    if user and safe_str_cmp(user.password.encode('utf-8'), password.encode('utf-8')):
+        session['id'] = user.id
+        return user.id
+
+def logout():
+    session.pop('id',None)
+    return True

@@ -2,7 +2,7 @@ from flask import request
 from flask_restplus import Resource
 
 from ..util.dto import PersonsDto
-from ..service.persons_service import create, get_all, get_one,update,delete
+from ..service.persons_service import create, get_all, get_one,update,delete, login,logout
 from flask_jwt import JWT, jwt_required, current_identity
 
 api = PersonsDto.api
@@ -53,3 +53,19 @@ class Persons(Resource):
     def delete(self,id):
         """get a person given its identifier and delete"""
         return delete(id=id)
+
+
+@api.route('/login')
+class PersonsLogin(Resource):
+    @api.doc('Login')
+    def post(self):
+        """Login User"""
+        data = request.form
+        return login(data['email'],data['password'])
+
+@api.route('/logout')
+class PersonsLogout(Resource):
+    @api.doc('Logout')
+    def post(self):
+        """List all registered persons"""
+        return logout()
