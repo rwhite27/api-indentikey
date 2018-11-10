@@ -65,6 +65,5 @@ class ResourceSettings(Resource):
 @api.param('id', 'The Resource identifier')
 class ResourceAccess(Resource):
     @api.doc('get all the resource access of a resouce')
-    @api.marshal_list_with(_resource_access)
     def get(self,id):
         return get_all_resouce_access(id=id)
