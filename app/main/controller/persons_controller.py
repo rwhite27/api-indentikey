@@ -2,11 +2,13 @@ from flask import request
 from flask_restplus import Resource
 
 from ..util.dto import PersonsDto
-from ..service.persons_service import create, get_all, get_one,update,delete, login,logout
+from ..util.dto import ResourcesDto
+from ..service.persons_service import create, get_all, get_one,update,delete, login,logout,get_all_user_resources
 from flask_jwt import JWT, jwt_required, current_identity
 
 api = PersonsDto.api
 _person= PersonsDto.role
+_resource = ResourcesDto.role
 
 
 @api.route('/')
@@ -69,3 +71,11 @@ class PersonsLogout(Resource):
     def post(self):
         """List all registered persons"""
         return logout()
+
+@api.route('/<id>/resources')
+class PersonsLogout(Resource):
+    @api.doc('Logout')
+    @api.marshal_list_with(_resource)
+    def get(self,id):
+        """List all registered persons"""
+        return get_all_user_resources(id=id)

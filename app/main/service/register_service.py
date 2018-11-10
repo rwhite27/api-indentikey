@@ -51,31 +51,29 @@ def register_qr_code(data):
     #To save the image in a new location on the server.
     qr.png('/home/ubuntu/api-indentikey/app/uploads/{}.png'.format(randomId), scale=5)
 
-    return True
+    #To send by email the generated qr code image.
+    fromaddr ="example@identikey.com"
+    toaddr = "rafaelwhite27@hotmail.com"
+    msg = MIMEMultipart()
+    msg['From'] = "example@identikey.com"
+    msg['To'] = "rafaelwhite27@hotmail.com"
+    msg['Subject'] = "QR Code Image Example"
+    body = "Python test mail"
+    msg.attach(MIMEText(body, 'plain'))
 
-    # #To send by email the generated qr code image.
-    # fromaddr ="example@identikey.com"
-    # toaddr = "rafaelwhite27@hotmail.com"
-    # msg = MIMEMultipart()
-    # msg['From'] = "example@identikey.com"
-    # msg['To'] = "rafaelwhite27@hotmail.com"
-    # msg['Subject'] = "QR Code Image Example"
-    # body = "Python test mail"
-    # msg.attach(MIMEText(body, 'plain'))
-
-    # img_data = open('/home/thesis/api-indentikey/app/uploads/test.png', 'rb').read()
-    # ImgFileName = 'test.png'
-    # image = MIMEImage(img_data, name=os.path.basename(ImgFileName))
-    # msg.attach(image)
-    # # Here we create the actual mail server. It would be wise to create it for global use.
-    # server = smtplib.SMTP('smtp.mailgun.org', 587)
-    # server.ehlo()
-    # server.starttls()
-    # server.ehlo()
-    # server.login("postmaster@sandbox42c331325cb141e9b02e8748f6bc2321.mailgun.org", "fc44fe896ab5732de5cc21ccdb9aff71-4836d8f5-57a231aa")
-    # text = msg.as_string()
-    # server.sendmail(fromaddr, toaddr, text)
-    # server.quit()
+    img_data = open('/home/ubuntu/api-indentikey/app/uploads/{}.png'.format(randomId), 'rb').read()
+    ImgFileName = 'test.png'
+    image = MIMEImage(img_data, name=os.path.basename(ImgFileName))
+    msg.attach(image)
+    # Here we create the actual mail server. It would be wise to create it for global use.
+    server = smtplib.SMTP('smtp.mailgun.org', 587)
+    server.ehlo()
+    server.starttls()
+    server.ehlo()
+    server.login(os.getenv("MAILGUN_USERNAME"),os.getenv("MAILGUN_PASSWORD")) # Need to put this credential in a .env or some other file
+    text = msg.as_string()
+    server.sendmail(fromaddr, toaddr, text)
+    server.quit()
 
 
 def register_fingerprint(data):
