@@ -4,6 +4,7 @@ import datetime
 from app.main import db
 from app.main.model.resources import Resources
 from app.main.model.resource_settings import ResourceSettings
+from app.main.model.resource_access import ResourceAccess
 from app.main.model.verification_methods import VerificationMethods
 
 
@@ -90,5 +91,16 @@ def get_all_resouce_settings(id):
             return results
         else:
             return False
+    else:
+        return 'No resource found'
+
+def get_all_resouce_access(id):
+    resource = Resources.query.filter_by(id=id).first()
+    if resource:
+        resource_access = ResourceAccess.query.filter_by(resource_id=resource.id).all()
+        if resource_access:
+            return resource_access
+        else:
+            return "No resource access found"
     else:
         return 'No resource found'
