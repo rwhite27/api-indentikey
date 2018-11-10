@@ -110,3 +110,7 @@ def get_all_user_resources(id):
         return resources
     else:
         return 'No resources found for that user'
+
+def get_person_by_email(data):
+    email = data['email']
+    return Persons.query.filter_by(email=email).first()
