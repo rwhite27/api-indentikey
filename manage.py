@@ -16,12 +16,17 @@ from app.main.model import resource_settings
 from app.main.model import verification_methods
 from app import blueprint
 from app.main.service.persons_service import authenticate, identity
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = create_app(os.getenv('BOILERPLATE_ENV') or 'dev')
 
 app.register_blueprint(blueprint)
 
 app.app_context().push()
+
+app.secret_key = 'hello this is a text'
 
 manager = Manager(app)
 

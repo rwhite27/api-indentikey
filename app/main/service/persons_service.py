@@ -4,6 +4,7 @@ import datetime
 from app.main import db
 from app.main.model.persons import Persons
 from app.main.model.roles import Roles
+from app.main.model.resources import Resources
 from werkzeug.security import safe_str_cmp
 from flask import session
 
@@ -102,3 +103,10 @@ def login(email,password):
 def logout():
     session.pop('id',None)
     return True
+
+def get_all_user_resources(id):
+    resources = Resources.query.filter_by(persons_id=id).all()
+    if resources:
+        return resources
+    else:
+        return 'No resources found for that user'

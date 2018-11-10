@@ -5,6 +5,7 @@ class Resources(db.Model):
     __tablename__ = "resources"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    persons_id = db.Column(db.Integer, unique=False, nullable=False)
     code = db.Column(db.String(100), unique=True)
     main_resource_id = db.Column(db.Integer, unique=False, nullable=True)
     name = db.Column(db.String(64), unique=False, nullable=False)
