@@ -93,10 +93,9 @@ def identity(payload):
 
 def login(email,password):
     user = Persons.query.filter_by(email=email).first()
-    role = Roles.query.filter_by(id=user.roles_id).first()
-    if user and role.name == 'Admin' and safe_str_cmp(user.password.encode('utf-8'), password.encode('utf-8')):
+    if user and safe_str_cmp(user.password.encode('utf-8'), password.encode('utf-8')):
         session['id'] = user.id
-        return user.id
+        return user
     else:
         return False
 

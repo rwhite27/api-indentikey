@@ -60,6 +60,7 @@ class Persons(Resource):
 @api.route('/login')
 class PersonsLogin(Resource):
     @api.doc('Login')
+    @api.marshal_list_with(_person)
     def post(self):
         """Login User"""
         data = request.form
