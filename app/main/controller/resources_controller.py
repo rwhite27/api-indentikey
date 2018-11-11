@@ -42,9 +42,10 @@ class Persons(Resource):
             return item
     
     @api.doc('update a Resource Access')
+    @api.marshal_with(_resources)
     def put(self,id):
         """get a Resource Access given its identifier and update"""
-        data = request.json
+        data = request.form
         return update(id=id,data=data)
         
     
