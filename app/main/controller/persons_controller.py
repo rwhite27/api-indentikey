@@ -76,7 +76,6 @@ class PersonsLogout(Resource):
 @api.route('/<id>/resources')
 class PersonsLogout(Resource):
     @api.doc('Logout')
-    @api.marshal_list_with(_resource)
     def get(self,id):
         """List all registered persons"""
         return get_all_user_resources(id=id)

@@ -5,6 +5,7 @@ from app.main import db
 from app.main.model.persons import Persons
 from app.main.model.roles import Roles
 from app.main.model.resources import Resources
+from app.main.model.resource_access import ResourceAccess
 from werkzeug.security import safe_str_cmp
 from flask import session
 
@@ -16,7 +17,6 @@ def create(data):
         lastname=data['lastname'],
         email=data['email'],
         password=data['password'],
-        roles_id=data['roles_id'],
         created_at = datetime.datetime.utcnow()
     )
     save_changes(new_item)
@@ -38,7 +38,6 @@ def update(id,data):
     item = Persons.query.filter_by(id=id).first()
     if item:
 
-        item.roles_id = data['roles_id']
         item.firstname = data['firstname']
         item.lastname = data['lastname']
         item.email = data['email']
@@ -106,7 +105,24 @@ def logout():
 def get_all_user_resources(id):
     resources = Resources.query.filter_by(persons_id=id).all()
     if resources:
-        return resources
+        for resource in resources:
+            results = []
+            resource_access = ResourceAccess.query.filter_by(resource_id=resource.id).first()
+            if resource_access:
+                item = {}
+                item['id'] = resource.id
+                item['main_resource_id'] = resource.main_resource_id
+                item['name'] = resource.name
+                item['created_at'] = resource.created_at
+                item['updated_at'] = resource.updated_at
+                item['is_deleted'] = resource.is_deleted
+                item['code'] = resource.code
+                item['persons_id'] = resource.persons_id
+                item['roles_id'] = resource_access.roles_id
+                results.append(item)
+            else:
+                return 'No resource access found'
+        return results
     else:
         return 'No resources found for that user'
 

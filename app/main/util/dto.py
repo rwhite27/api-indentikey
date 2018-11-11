@@ -22,7 +22,6 @@ class PersonsDto:
     api = Namespace('persons', description='persons related operations')
     role = api.model('persons', {
         'id': fields.Integer(required=False, description='person id'),
-        'roles_id': fields.Integer(required=False, description='role id'),
         'firstname': fields.String(required=True, description='person firstname'),
         'lastname': fields.String(required=True, description='person lastname'),
         'email': fields.String(required=True, description='person email'),
@@ -52,6 +51,7 @@ class ResourceAccessDto:
         'id': fields.Integer(required=False, description='person id'),
         'resource_id': fields.Integer(required=False, description='resource-access id'),
         'persons_id': fields.Integer(required=False, description='resource-access id'),
+        'roles_id': fields.Integer(required=False, description='persons role in resource id'),
         'is_active': fields.Integer(required=False, description='is active status'),
         'is_deleted': fields.Integer(required=False, description='delete status'),
         'created_at': fields.DateTime(required=False, description=' when was created'),

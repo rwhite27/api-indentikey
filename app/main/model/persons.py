@@ -5,7 +5,6 @@ class Persons(db.Model):
     __tablename__ = "persons"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    roles_id = db.Column(db.Integer, unique=False)
     firstname = db.Column(db.String(64), unique=False, nullable=True)
     lastname = db.Column(db.String(64), unique=False, nullable=True)
     email = db.Column(db.String(64), unique=True, nullable=False)
