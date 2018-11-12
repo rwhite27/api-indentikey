@@ -61,7 +61,7 @@ class PersonVerification(Resource):
         # #Need to make a for in statement so that the verification passes through every function depending on settings
 
         # return 'hello'
-        option = 'VOICERECOG'
+        option = 'FACERECOG'
 
         if option == 'QR_CODE':
            return  verify_qr_code(data=data)

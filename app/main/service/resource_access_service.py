@@ -10,6 +10,7 @@ def create(data):
     new_item = ResourceAccess(
         resource_id=data['resource_id'],
         persons_id=data['persons_id'],
+        roles_id=data['roles_id'],
         is_active=data['is_active'],
         created_at = datetime.datetime.utcnow()
     )
@@ -32,10 +33,9 @@ def update(id,data):
     item = ResourceAccess.query.filter_by(id=id).first()
     if item:
 
-        item.resource_id = data['resource_id']
-        item.persons_id = data['persons_id']
-        item.is_active = data['is_active']
-        item.is_deleted = data['is_deleted']
+        item.resource_id = data['resource_id'] if 'resource_id' in data else item.resource_id
+        item.persons_id = data['persons_id'] if 'persons_id' in data else item.persons_id
+        item.is_active = data['is_active'] if 'is_active' in data else item.is_active
         item.updated_at = datetime.datetime.utcnow()
 
         db.session.commit()

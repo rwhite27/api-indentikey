@@ -9,10 +9,10 @@ def create(data):
 
     new_item = PersonsData(
         persons_id=data['persons_id'],
-        qr_code=data['qr_code'],
-        fingerprint=data['fingerprint'],
-        face_model=data['face_model'],
-        voice_profile=data['voice_profile'],
+        qr_code=data['qr_code'] if 'qr_code' in data else ' ',
+        fingerprint=data['fingerprint'] if 'fingerprint' in data else ' ',
+        face_model=data['face_model'] if 'face_model' in data else ' ',
+        voice_profile=data['voice_profile'] if 'voice_profile' in data else ' ',
         created_at = datetime.datetime.utcnow()
     )
     save_changes(new_item)
@@ -35,11 +35,10 @@ def update(id,data):
     if item:
 
         item.persons_id = data['persons_id']
-        item.qr_code = data['qr_code']
-        item.fingerprint = data['fingerprint']
-        item.face_model = data['face_model']
-        item.voice_profile = data['voice_profile']
-        item.is_deleted = data['is_deleted']
+        item.qr_code = data['qr_code'] if 'qr_code' in data else item.qr_code
+        item.fingerprint = data['fingerprint'] if 'fingerprint' in data else item.fingerprint
+        item.face_model = data['face_model'] if 'face_model' in data else item.face_model
+        item.voice_profile = data['voice_profile'] if 'voice_profile' in data else item.voice_profile
         item.updated_at = datetime.datetime.utcnow()
 
         db.session.commit()

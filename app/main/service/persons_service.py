@@ -126,6 +126,37 @@ def get_all_user_resources(id):
     else:
         return 'No resources found for that user'
 
+def get_all_user_resource_access(id):
+    resource_access = ResourceAccess.query.filter_by(persons_id=id).all()
+    if resource_access:
+        for access in resource_access:
+            results = []
+            resource = Resources.query.filter_by(id=access.resource_id).first()
+            if resource:
+                item = {}
+                item['id'] = resource.id
+                item['main_resource_id'] = resource.main_resource_id
+                item['name'] = resource.name
+                item['created_at'] = resource.created_at
+                item['updated_at'] = resource.updated_at
+                item['is_deleted'] = resource.is_deleted
+                item['code'] = resource.code
+                item['persons_id'] = resource.persons_id
+                item['roles_id'] = access.roles_id
+                results.append(item)
+            else:
+                item = {}
+                item['roles_id'] = access.roles_id
+                item['resource_id'] = access.resource_id
+                item['persons_id'] = access.persons_id
+                item['is_active'] = access.is_active
+                item['created_at'] = access.created_at
+                item['updated_at'] = access.updated_at
+                results.append(item)
+        return results
+    else:
+        return 'No resources found for that user'
+
 def get_person_by_email(data):
     email = data['email']
     return Persons.query.filter_by(email=email).first()
