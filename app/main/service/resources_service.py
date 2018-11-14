@@ -4,6 +4,8 @@ import datetime
 from app.main import db
 from app.main.model.resources import Resources
 from app.main.model.resource_settings import ResourceSettings
+from app.main.model.resource_access import ResourceAccess
+from app.main.model.persons import Persons
 from app.main.model.verification_methods import VerificationMethods
 
 
@@ -14,6 +16,7 @@ def create(data):
         name=data['name'],
         main_resource_id=data['main_resource_id'],
         persons_id=data['persons_id'],
+        min_threshold=data['min_threshold'],
         code = str(uuid.uuid4()),
         created_at = datetime.datetime.utcnow()
     )
@@ -38,17 +41,14 @@ def update(id,data):
 
         item.name = data['name']
         item.main_resource_id = data['main_resource_id']
+        item.min_threshold = data['min_threshold']
         item.is_deleted = data['is_deleted']
         item.persons_id=data['persons_id'],
         item.updated_at = datetime.datetime.utcnow()
 
         db.session.commit()
 
-        response_object = {
-        'status': 'success',
-        'message': 'Successfully updated'
-        }
-        return response_object, 201
+        return item
     else:
         response_object = {
         'status': 'failure',
@@ -90,5 +90,32 @@ def get_all_resouce_settings(id):
             return results
         else:
             return False
+    else:
+        return 'No resource found'
+
+def get_all_resouce_access(id):
+    resource = Resources.query.filter_by(id=id).first()
+    if resource:
+        resource_access = ResourceAccess.query.filter_by(resource_id=resource.id).all()
+        if resource_access:
+            results = []
+            for access in resource_access:
+                person = Persons.query.filter_by(id=access.persons_id).first()
+                item = {}
+                item['id'] = access.id
+                item['resource_id'] = access.resource_id
+                item['persons_id'] = person.id
+                item['persons_firstname'] = person.firstname
+                item['persons_lastname'] = person.lastname
+                item['persons_email'] = person.email
+                item['is_active'] = access.is_active
+                item['is_deleted'] = access.is_deleted
+                item['created_at'] = access.created_at
+                item['updated_at'] = access.updated_at
+
+                results.append(item)
+            return results
+        else:
+            return "No resource access found"
     else:
         return 'No resource found'

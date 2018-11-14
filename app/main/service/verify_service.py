@@ -35,7 +35,7 @@ def verify_qr_code(data):
 def verify_fingerprint(data):
     
     # Temporary save the image
-    image = data['file']
+    image = data['finger_file']
     filename = image.filename
     image.save(os.path.join('/home/ubuntu/api-indentikey/app/uploads', filename))
     
@@ -48,14 +48,14 @@ def send_verify_fingerprint(filename):
     body = open('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename), 'rb')
 
     response = requests.post('http://ec2-52-21-122-184.compute-1.amazonaws.com:5000/verify', files=dict(file=body))
-    return response
+    return response.text
 
 
 # Main function for face verification
 def verify_face(data):
     
     # Temporary save the image
-    image = data['file']
+    image = data['face_file']
     filename = image.filename
     image.save(os.path.join('/home/ubuntu/api-indentikey/app/uploads', filename))
             
@@ -67,15 +67,15 @@ def send_verify_face(filename):
     body = open('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename), 'rb')
 
     response = requests.post('http://ec2-52-21-122-184.compute-1.amazonaws.com:8080/verify', files=dict(file=body))
-    return response
+    return response.text
 
 #Main function for voice verification
-def verify_voice(data):
+def verify_voice(data,id):
     
-    persons_id = data['persons_id']
+    persons_id = id
 
     # Temporary save the image
-    voice = data['file']
+    voice = data['voice_file']
     filename = voice.filename
     voice.save(os.path.join('/home/ubuntu/api-indentikey/app/uploads', filename))
 

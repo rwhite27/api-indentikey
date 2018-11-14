@@ -3,7 +3,7 @@ from flask_restplus import Resource
 
 from ..util.dto import PersonsDto
 from ..util.dto import ResourcesDto
-from ..service.persons_service import create, get_all, get_one,update,delete, login,logout,get_all_user_resources
+from ..service.persons_service import create, get_all, get_one,update,delete, login,logout,get_all_user_resources, get_person_by_email,get_all_user_resource_access
 from flask_jwt import JWT, jwt_required, current_identity
 
 api = PersonsDto.api
@@ -25,7 +25,7 @@ class PersonsList(Resource):
     @api.expect(_person, validate=False)
     def post(self):
         """Creates a new person """
-        data = request.json
+        data = request.form
         return create(data=data)
 
 
@@ -60,6 +60,7 @@ class Persons(Resource):
 @api.route('/login')
 class PersonsLogin(Resource):
     @api.doc('Login')
+    @api.marshal_list_with(_person)
     def post(self):
         """Login User"""
         data = request.form
@@ -75,7 +76,22 @@ class PersonsLogout(Resource):
 @api.route('/<id>/resources')
 class PersonsLogout(Resource):
     @api.doc('Logout')
-    @api.marshal_list_with(_resource)
     def get(self,id):
         """List all registered persons"""
         return get_all_user_resources(id=id)
+
+@api.route('/<id>/resources-access')
+class PersonsLogout(Resource):
+    @api.doc('Logout')
+    def get(self,id):
+        """List all registered persons"""
+        return get_all_user_resource_access(id=id)
+
+@api.route('/email')
+class PersonsLogout(Resource):
+    @api.doc('Get person by email')
+    @api.marshal_list_with(_person)
+    def post(self):
+        data = request.form
+        """Fetch a person by email"""
+        return get_person_by_email(data)
