@@ -16,6 +16,7 @@ def create(data):
         name=data['name'],
         main_resource_id=data['main_resource_id'],
         persons_id=data['persons_id'],
+        min_threshold=data['min_threshold'],
         code = str(uuid.uuid4()),
         created_at = datetime.datetime.utcnow()
     )
@@ -40,6 +41,7 @@ def update(id,data):
 
         item.name = data['name']
         item.main_resource_id = data['main_resource_id']
+        item.min_threshold = data['min_threshold']
         item.is_deleted = data['is_deleted']
         item.persons_id=data['persons_id'],
         item.updated_at = datetime.datetime.utcnow()

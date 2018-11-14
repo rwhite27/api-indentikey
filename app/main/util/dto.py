@@ -63,6 +63,7 @@ class ResourcesDto:
     role = api.model('resources', {
         'id': fields.Integer(required=False, description='resources id'),
         'persons_id': fields.Integer(required=False, description='owner id'),
+        'min_threshold': fields.Integer(required=False, description='minimun threshold'),
         'code': fields.String(required=True, description='resources specific code'),
         'name': fields.String(required=True, description='resources name'),
         'main_resource_id': fields.Integer(required=False, description='resources main resource id'),
