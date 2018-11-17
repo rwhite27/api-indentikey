@@ -104,7 +104,7 @@ def register_fingerprint(data):
         person_data = PersonsData.query.filter_by(persons_id=person.id).first()
 
         if person_data:
-            person_data.face_model = fingerprint
+            person_data.fingerprint = fingerprint
             db.session.commit()
 
             ##Send data to flask api here
