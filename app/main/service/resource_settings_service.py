@@ -32,10 +32,10 @@ def update(id,data):
     item = ResourceSettings.query.filter_by(id=id).first()
     if item:
 
-        item.threshold = data['threshold']
-        item.resources_id = data['resources_id']
-        item.verification_methods_id = data['verification_methods_id']
-        item.is_deleted = data['is_deleted']
+        item.threshold = data['threshold'] if 'threshold' in data else item.threshold
+        item.resources_id = data['resources_id'] if 'resources_id' in data else item.resources_id
+        item.verification_methods_id = data['verification_methods_id'] if 'verification_methods_id' in data else item.verification_methods_id
+        item.is_deleted = data['is_deleted'] if 'is_deleted' in data else item.is_deleted
         item.updated_at = datetime.datetime.utcnow()
 
         db.session.commit()

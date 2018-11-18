@@ -3,7 +3,7 @@ from flask_restplus import Resource
 
 from ..util.dto import ResourcesDto
 from ..util.dto import ResourceAccessDto
-from ..service.resources_service import create, get_all, get_one,update,delete, get_all_resouce_settings, get_all_resouce_access
+from ..service.resources_service import create, get_all, get_one,update,delete, get_all_resouce_settings, get_all_resouce_access, put_resouce_settings
 
 api = ResourcesDto.api
 _resources= ResourcesDto.role
@@ -61,6 +61,11 @@ class ResourceSettings(Resource):
     @api.doc('get all the resource settings of a resouce')
     def get(self,id):
         return get_all_resouce_settings(id=id)
+    
+    @api.doc('get all the resource access of a resouce')
+    def put(self,id):
+        data = request.json
+        return put_resouce_settings(id=id,data=data)
 
 @api.route('/<id>/resource-access')
 @api.param('id', 'The Resource identifier')

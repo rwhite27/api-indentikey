@@ -89,7 +89,7 @@ def save_changes(data):
 def get_all_resouce_settings(id):
     resource = Resources.query.filter_by(id=id).first()
     if resource:
-        resource_settings = ResourceSettings.query.filter_by(resources_id=resource.id).all()
+        resource_settings = ResourceSettings.query.filter_by(resources_id=resource.id,is_deleted=0).all()
         if resource_settings:
             results = {}
             for resource_setting in resource_settings:
@@ -97,6 +97,31 @@ def get_all_resouce_settings(id):
                 results[method.name] = resource_setting.threshold
             
             return results
+        else:
+            return False
+    else:
+        return 'No resource found'
+
+def put_resouce_settings(id,data):
+    resource = Resources.query.filter_by(id=id).first()
+    if resource:
+        resource_settings = ResourceSettings.query.filter_by(resources_id=resource.id).all()
+        if resource_settings:
+            results = {}
+            for resource_setting in resource_settings:
+                method = VerificationMethods.query.filter_by(id=resource_setting.verification_methods_id).first()
+                results[method.name] = resource_setting.threshold
+                put_results = {}
+                for (key,value) in results.items():
+                    if key in data and data[key]== 0:
+                        resource_setting.is_deleted = 1
+                        db.session.commit()
+                    elif key in data and data[key] > 0:
+                        resource_setting.threshold = data[key]
+                        resource_setting.is_deleted = 0
+                        put_results[key] = data[key]
+                        db.session.commit()
+            return put_results
         else:
             return False
     else:

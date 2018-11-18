@@ -21,7 +21,7 @@ class PersonsList(Resource):
     @api.expect(_resource_settings, validate=False)
     def post(self):
         """Creates a new Resource Access """
-        data = request.json
+        data = request.form
         return create(data=data)
 
 
@@ -42,7 +42,7 @@ class Persons(Resource):
     @api.doc('update a Resource Access')
     def put(self,id):
         """get a Resource Access given its identifier and update"""
-        data = request.json
+        data = request.form
         return update(id=id,data=data)
         
     
