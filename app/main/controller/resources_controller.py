@@ -23,7 +23,7 @@ class PersonsList(Resource):
     @api.expect(_resources, validate=False)
     def post(self):
         """Creates a new Resource Access """
-        data = request.json
+        data = request.form
         return create(data=data)
 
 

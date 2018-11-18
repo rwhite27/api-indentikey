@@ -21,6 +21,15 @@ def create(data):
         created_at = datetime.datetime.utcnow()
     )
     save_changes(new_item)
+
+    new_resource_access = ResourceAccess(
+        resource_id=new_item.id,
+        persons_id=data['persons_id'],
+        roles_id=1,
+        is_active=1,
+        created_at = datetime.datetime.utcnow()
+    )
+    save_changes(new_resource_access)
     response_object = {
         'status': 'success',
         'message': 'Successfully registered.'

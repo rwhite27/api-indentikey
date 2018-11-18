@@ -95,7 +95,6 @@ def confirm_identity(minimun_threshold,results,resource_thresholds):
     for (key,value) in results.items():
         if value == True:
             confirmation_total += resource_thresholds[key]
-        
     if confirmation_total >= minimun_threshold:
         return True
     else:

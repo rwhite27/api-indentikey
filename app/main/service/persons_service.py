@@ -20,11 +20,7 @@ def create(data):
         created_at = datetime.datetime.utcnow()
     )
     save_changes(new_item)
-    response_object = {
-        'status': 'success',
-        'message': 'Successfully registered.'
-    }
-    return response_object, 201
+    return new_item.id
 
 
 def get_all():
@@ -129,8 +125,8 @@ def get_all_user_resources(id):
 def get_all_user_resource_access(id):
     resource_access = ResourceAccess.query.filter_by(persons_id=id).all()
     if resource_access:
+        results = []
         for access in resource_access:
-            results = []
             resource = Resources.query.filter_by(id=access.resource_id).first()
             if resource:
                 item = {}
