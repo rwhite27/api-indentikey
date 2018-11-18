@@ -48,11 +48,11 @@ def update(id,data):
     item = Resources.query.filter_by(id=id).first()
     if item:
 
-        item.name = data['name']
-        item.main_resource_id = data['main_resource_id']
-        item.min_threshold = data['min_threshold']
-        item.is_deleted = data['is_deleted']
-        item.persons_id=data['persons_id'],
+        item.name = data['name'] if 'name' in data else item.name
+        item.main_resource_id = data['main_resource_id'] if 'main_resource_id' in data else item.main_resource_id
+        item.min_threshold = data['min_threshold'] if 'min_threshold' in data else item.min_threshold
+        item.is_deleted = data['is_deleted'] if 'is_deleted' in data else item.is_deleted
+        item.persons_id=data['persons_id'] if 'persons_id' in data else item.persons_id
         item.updated_at = datetime.datetime.utcnow()
 
         db.session.commit()
