@@ -32,7 +32,8 @@ def create(data):
     save_changes(new_resource_access)
     response_object = {
         'status': 'success',
-        'message': 'Successfully registered.'
+        'message': 'Successfully registered.',
+        'resource_id': new_item.id
     }
     return response_object, 201
 
