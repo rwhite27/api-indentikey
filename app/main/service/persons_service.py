@@ -123,7 +123,7 @@ def get_all_user_resources(id):
         return 'No resources found for that user'
 
 def get_all_user_resource_access(id):
-    resource_access = ResourceAccess.query.filter_by(persons_id=id).all()
+    resource_access = ResourceAccess.query.filter_by(persons_id=id,is_active=1).all()
     if resource_access:
         results = []
         for access in resource_access:
@@ -152,6 +152,21 @@ def get_all_user_resource_access(id):
         return results
     else:
         return 'No resources found for that user'
+
+def put_user_resource_access(id,data):
+    resource_access = ResourceAccess.query.filter_by(persons_id=id,resource_id=data['resources_id']).first()
+    if resource_access:
+        resource_access.is_active = data['is_active']
+        db.session.commit()
+        
+        response_object = {
+        'status': 'success',
+        'message': 'Successfully updated persons resource access'
+        }
+        return response_object, 201
+    else:
+        return "Resource Access for this persons not found"
+        
 
 def get_person_by_email(data):
     email = data['email']
