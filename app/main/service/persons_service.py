@@ -139,6 +139,12 @@ def get_all_user_resource_access(id):
                 item['code'] = resource.code
                 item['persons_id'] = resource.persons_id
                 item['roles_id'] = access.roles_id
+
+                if resource.main_resource_id > 0:
+                    main_resource = Resources.query.filter_by(id=resource.main_resource_id).first()
+                    if main_resource:
+                        item['main_resource_name'] = main_resource.name
+
                 results.append(item)
             else:
                 item = {}
