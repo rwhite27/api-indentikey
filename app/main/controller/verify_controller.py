@@ -39,7 +39,7 @@ class PersonVerification(Resource):
         if resource:
             allowed = is_person_allowed(resource.id,qr_results)
             if allowed:
-                resource_settings = ResourceSettings.query.filter_by(resources_id=resource.id).all()
+                resource_settings = ResourceSettings.query.filter_by(resources_id=resource.id,is_deleted=0).all()
                 if resource_settings:
                     for resource_setting in resource_settings:
 
@@ -95,7 +95,7 @@ def confirm_identity(minimun_threshold,results,resource_thresholds):
     for (key,value) in results.items():
         if value == True:
             confirmation_total += resource_thresholds[key]
-        
+    return results
     if confirmation_total >= minimun_threshold:
         return True
     else:

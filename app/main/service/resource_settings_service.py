@@ -8,15 +8,16 @@ from app.main.model.resource_settings import ResourceSettings
 def create(data):
 
     new_item = ResourceSettings(
-        threshold=data['threshold'],
-        resources_id=data['resources_id'],
-        verification_methods_id=data['verification_methods_id'],
+        threshold=data['threshold'] if 'threshold' in data else 0,
+        resources_id=data['resources_id'] if 'resources_id' in data else 0,
+        verification_methods_id=data['verification_methods_id'] if 'verification_methods_id' in data else 0,
         created_at = datetime.datetime.utcnow()
     )
     save_changes(new_item)
     response_object = {
         'status': 'success',
-        'message': 'Successfully registered.'
+        'message': 'Successfully registered.',
+        'resources_setting_id': new_item.id 
     }
     return response_object, 201
 
@@ -32,10 +33,10 @@ def update(id,data):
     item = ResourceSettings.query.filter_by(id=id).first()
     if item:
 
-        item.threshold = data['threshold']
-        item.resources_id = data['resources_id']
-        item.verification_methods_id = data['verification_methods_id']
-        item.is_deleted = data['is_deleted']
+        item.threshold = data['threshold'] if 'threshold' in data else item.threshold
+        item.resources_id = data['resources_id'] if 'resources_id' in data else item.resources_id
+        item.verification_methods_id = data['verification_methods_id'] if 'verification_methods_id' in data else item.verification_methods_id
+        item.is_deleted = data['is_deleted'] if 'is_deleted' in data else item.is_deleted
         item.updated_at = datetime.datetime.utcnow()
 
         db.session.commit()

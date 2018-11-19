@@ -21,7 +21,7 @@ class PersonsDataList(Resource):
     @api.expect(_person_data, validate=False)
     def post(self):
         """Creates a new person data """
-        data = request.json
+        data = request.form
         return create(data=data)
 
 

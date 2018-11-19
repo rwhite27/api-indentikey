@@ -3,7 +3,7 @@ from flask_restplus import Resource
 
 from ..util.dto import PersonsDto
 from ..util.dto import ResourcesDto
-from ..service.persons_service import create, get_all, get_one,update,delete, login,logout,get_all_user_resources, get_person_by_email,get_all_user_resource_access
+from ..service.persons_service import create, get_all, get_one,update,delete, login,logout,get_all_user_resources, get_person_by_email,get_all_user_resource_access, put_user_resource_access
 from flask_jwt import JWT, jwt_required, current_identity
 
 api = PersonsDto.api
@@ -86,6 +86,11 @@ class PersonsLogout(Resource):
     def get(self,id):
         """List all registered persons"""
         return get_all_user_resource_access(id=id)
+    
+    def put(self,id):
+        """List all registered persons"""
+        data = request.form
+        return put_user_resource_access(id=id,data=data)
 
 @api.route('/email')
 class PersonsLogout(Resource):
