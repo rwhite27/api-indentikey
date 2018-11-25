@@ -83,7 +83,7 @@ def register_fingerprint(data):
 
     count = 0
 
-    while count < 3:
+    while count < 5:
         image = data['fingerprint[{}]'.format(count)]
         filename = image.filename
         
@@ -291,16 +291,24 @@ def convert_audio_ogg(data):
 
          audio = data['recordings[{}]'.format(count)]
          filename = audio.filename
-         audio.save(os.path.join('/home/ubuntu/api-indentikey/app/uploads','recordings[{}].ogg'.format(count)))
+         filename_split = filename.split('.')[0]
+         filename_extension = filename.split('.')[1]
+         audio.save(os.path.join('/home/ubuntu/api-indentikey/app/uploads','recordings[{}].{}'.format(count,filename_extension)))
+
+         
+         os.system('ffmpeg -i /home/ubuntu/api-indentikey/app/uploads/recordings[{}].{} /home/ubuntu/api-indentikey/app/uploads/recordings[{}].mp3'.format(count,filename_extension,count))
 
          #Convert Audio
-         sound_ogg = AudioSegment.from_file('/home/ubuntu/api-indentikey/app/uploads/recordings[{}].ogg'.format(count), format="ogg")
+         sound_ogg = AudioSegment.from_file('/home/ubuntu/api-indentikey/app/uploads/recordings[{}].mp3'.format(count), format="mp3")
 
          modify_frame_rate = sound_ogg.set_frame_rate(16000)
 
          modify_sample_width = modify_frame_rate.set_sample_width(2)
 
-         modify_sample_width.export("/home/ubuntu/api-indentikey/app/uploads/recordings[{}].wav".format(count),format="wav")
+         modify_sample_channel = modify_sample_width.set_channels(1)
 
-         os.remove('/home/ubuntu/api-indentikey/app/uploads/recordings[{}].ogg'.format(count))
+         modify_sample_channel.export("/home/ubuntu/api-indentikey/app/uploads/recordings[{}].wav".format(count),format="wav")
+
+         os.remove('/home/ubuntu/api-indentikey/app/uploads/recordings[{}].{}'.format(count,filename_extension))
+         os.remove('/home/ubuntu/api-indentikey/app/uploads/recordings[{}].mp3'.format(count))
          count += 1
