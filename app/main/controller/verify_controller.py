@@ -8,6 +8,7 @@ from app.main.model.resource_settings import ResourceSettings
 from app.main.model.verification_methods import VerificationMethods
 from app.main.model.resource_access import ResourceAccess
 import json
+from datetime import datetime
 
 api = VerifyDto.api
 
@@ -37,7 +38,7 @@ class PersonVerification(Resource):
         resource = Resources.query.filter_by(code=data['code']).first()
 
         if resource:
-            allowed = is_person_allowed(resource.id,qr_results)
+            allowed = is_person_allowed(resource.id,qr_results['persons_id'])
             if allowed:
                 resource_settings = ResourceSettings.query.filter_by(resources_id=resource.id,is_deleted=0).all()
                 if resource_settings:
@@ -53,7 +54,7 @@ class PersonVerification(Resource):
                                 finger_results = json.loads(verify_fingerprint(data=data))
                                 if finger_results['verification']:
                                     confirm_id = finger_results['verification'].replace('(','').replace(')','').split(',')[0].replace("'",'')
-                                    if int(confirm_id) == qr_results:
+                                    if int(confirm_id) == qr_results['persons_id']:
                                         verification_result = True
                                     else:
                                         verification_result = False
@@ -66,7 +67,7 @@ class PersonVerification(Resource):
                                 else:
                                     verification_result = False
                             elif option == 'VOICERECOG':
-                               verification_result = verify_voice(data=data,id=qr_results)
+                               verification_result = verify_voice(data=data,id=qr_results['persons_id'])
                             else:
                                 return 'Invalid verification'
                             
@@ -74,7 +75,7 @@ class PersonVerification(Resource):
                             resource_thresholds[verification_method.name]= resource_setting.threshold
                         else:
                             return 'No verification method found'
-                    return confirm_identity(minimun_threshold=resource.min_threshold,results=results,resource_thresholds=resource_thresholds)
+                    return confirm_identity(minimun_threshold=resource.min_threshold,results=results,resource_thresholds=resource_thresholds,qr_results=qr_results)
             else:
                 return "Person not allowed"
         else:
@@ -85,11 +86,18 @@ def is_person_allowed(resources_id,persons_id):
         resource_access = ResourceAccess.query.filter_by(resource_id=resources_id,persons_id=persons_id,is_active=1).first()
 
         if resource_access:
-            return True
+            if resource_access.from_date is None and resource_access.to_date is None:
+                return True;
+            else:
+                if resource_access.from_date < resource_access.to_date and resource_access.to_date > datetime.now():
+                    return True;
+                else:
+                    return False;
         else:
-            return False
+            return False;
 
-def confirm_identity(minimun_threshold,results,resource_thresholds):
+
+def confirm_identity(minimun_threshold,results,resource_thresholds,qr_results):
 
     confirmation_total = 0
     for (key,value) in results.items():
@@ -97,7 +105,12 @@ def confirm_identity(minimun_threshold,results,resource_thresholds):
             confirmation_total += resource_thresholds[key]
     return results
     if confirmation_total >= minimun_threshold:
-        return True
+        final_response = {
+            'validation':True,
+            'persons_firstname': qr_results['persons_firstname'],
+            'persons_lastname': qr_results['persons_lastname']
+        }
+        return final_response
     else:
         return False
 

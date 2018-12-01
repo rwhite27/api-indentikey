@@ -8,6 +8,11 @@ from app.main.model.resources import Resources
 from app.main.model.resource_access import ResourceAccess
 from werkzeug.security import safe_str_cmp
 from flask import session
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
+import smtplib
+import os
 
 
 def create(data):
@@ -17,9 +22,18 @@ def create(data):
         lastname=data['lastname'],
         email=data['email'],
         password=data['password'],
+        was_validated = 0,
         created_at = datetime.datetime.utcnow()
     )
     save_changes(new_item)
+    send_validation_email(data['email'])
+
+    #Entonces aqui deberiamos enviar el mensaje de checkiar el email para validar su cuenta en vez del id.
+    # response_object = {
+    #     'status': 'success',
+    #     'message': 'Successfully updated'
+    #     }
+    # return response_object, 201
     return new_item.id
 
 
@@ -87,7 +101,7 @@ def identity(payload):
     return Persons.query.get(user_id)
 
 def login(email,password):
-    user = Persons.query.filter_by(email=email).first()
+    user = Persons.query.filter_by(email=email,was_validated=1).first()
     if user and safe_str_cmp(user.password.encode('utf-8'), password.encode('utf-8')):
         session['id'] = user.id
         return user
@@ -176,4 +190,110 @@ def put_user_resource_access(id,data):
 
 def get_person_by_email(data):
     email = data['email']
-    return Persons.query.filter_by(email=email).first()
+    return Persons.query.filter_by(email=email,was_validated=1).first()
+
+def validate_persons_email(email):
+
+    #Search for person in database and activate
+    person = Persons.query.filter_by(email=email,was_validated=0).first()
+
+    if person:
+        person.was_validated = 1
+        db.session.commit()
+        return 'Person was validated'
+    else:
+        return 'Person not found so could not be validated'
+
+def add_invite_to_resource(email,resource_id,from_date,to_date):
+
+    #Search for person in database and activate
+    person = Persons.query.filter_by(email=email,was_validated=1).first()
+
+    if person:
+
+        new_item = ResourceAccess(
+            resource_id=resource_id,
+            persons_id=person.id,
+            roles_id=2,
+            is_active=1,
+            from_date = from_date,
+            to_date= to_date,
+            created_at = datetime.datetime.utcnow()
+        )
+
+        db.session.add(new_item)
+        db.session.commit()
+        return new_item.id
+    else:
+        return 'Person not found so could not be added to Resource'
+
+def send_invitation(id,email,resource_id):
+
+    invite_person = Persons.query.filter_by(email=email,was_validated=1).first()
+
+    if invite_person:
+      send_invitation_email(id,email,resource_id)
+    else:
+        return "Person not found in our database"
+
+def send_validation_email(email):
+    #To send by email the generated qr code image.
+    fromaddr ="example@identikey.com"
+    toaddr = "rafaelwhite27@hotmail.com" # Se supone que aqui va el email de la persona que se registro
+    msg = MIMEMultipart()
+    msg['From'] = "example@identikey.com"
+    msg['To'] = "rafaelwhite27@hotmail.com"
+    msg['Subject'] = "Identikey Validation"
+    body = "Here is your validation link: http://ec2-52-21-122-184.compute-1.amazonaws.com:8888?email={}".format(email)
+    msg.attach(MIMEText(body, 'plain'))
+
+    # img_data = open('/home/ubuntu/api-indentikey/app/uploads/{}.png'.format(randomId), 'rb').read()
+    # ImgFileName = 'test.png'
+    # image = MIMEImage(img_data, name=os.path.basename(ImgFileName))
+    # msg.attach(image)
+    # Here we create the actual mail server. It would be wise to create it for global use.
+    server = smtplib.SMTP('smtp.mailgun.org', 587)
+    server.ehlo()
+    server.starttls()
+    server.ehlo()
+    server.login(os.getenv("MAILGUN_USERNAME"),os.getenv("MAILGUN_PASSWORD")) # Need to put this credential in a .env or some other file
+    text = msg.as_string()
+    server.sendmail(fromaddr, toaddr, text)
+    server.quit()
+    print('Email sent')
+
+def send_invitation_email(id,email,resource_id):
+
+    host_person = Persons.query.filter_by(id=id,was_validated=1).first()
+
+    host_full_name = host_person.firstname +' '+ host_person.lastname
+
+    resource = Resources.query.filter_by(id=resource_id).first()
+
+    #To send by email the generated qr code image.
+    fromaddr ="example@identikey.com"
+    toaddr = "rafaelwhite27@hotmail.com" # Se supone que aqui va el email de la persona que se registro
+    msg = MIMEMultipart()
+    msg['From'] = "example@identikey.com"
+    msg['To'] = "rafaelwhite27@hotmail.com"
+    msg['Subject'] = "{} has invited you".format(host_full_name)
+    body = "{} has invited you to {} resource. Please click on the link to succesfully add you to {} resource: http://ec2-52-21-122-184.compute-1.amazonaws.com:8888?invite={}".format(host_full_name,resource.name,host_full_name,email)
+    msg.attach(MIMEText(body, 'plain'))
+
+    # img_data = open('/home/ubuntu/api-indentikey/app/uploads/{}.png'.format(randomId), 'rb').read()
+    # ImgFileName = 'test.png'
+    # image = MIMEImage(img_data, name=os.path.basename(ImgFileName))
+    # msg.attach(image)
+    # Here we create the actual mail server. It would be wise to create it for global use.
+    server = smtplib.SMTP('smtp.mailgun.org', 587)
+    server.ehlo()
+    server.starttls()
+    server.ehlo()
+    server.login(os.getenv("MAILGUN_USERNAME"),os.getenv("MAILGUN_PASSWORD")) # Need to put this credential in a .env or some other file
+    text = msg.as_string()
+    server.sendmail(fromaddr, toaddr, text)
+    server.quit()
+    print('Email sent')
+
+  
+

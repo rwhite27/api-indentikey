@@ -15,6 +15,7 @@ import json
 from pydub import AudioSegment
 import http.client, urllib.request, urllib.parse, urllib.error, base64
 import requests
+from subprocess import call
 
 #Main function for qr_code verification
 def verify_qr_code(data):
@@ -25,7 +26,13 @@ def verify_qr_code(data):
 
     if person_data:
         if (person_data.qr_code == qr_code):
-            return person_data.persons_id
+            person = Persons.query.filter_by(id=person_data.persons_id).first()
+            response= {
+                'persons_id': person.id,
+                'persons_firstname': person.firstname,
+                'persons_lastname': person.lastname
+            }
+            return response
         else:
             return False
     else:
@@ -124,14 +131,22 @@ def verify_azure(profile_id,filename):
 
 def convert_audio_ogg(filename):
 
+    #command to convert from m4a to mp3
+    filename_split = filename.split('.')[0]
+    filename_extension = filename.split('.')[1]
+    os.system('ffmpeg -i /home/ubuntu/api-indentikey/app/uploads/{}.{} /home/ubuntu/api-indentikey/app/uploads/{}.mp3'.format(filename_split,filename_extension,filename_split))
+
     #Convert Audio
-    sound_ogg = AudioSegment.from_file('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename), format="ogg")
+    sound_ogg = AudioSegment.from_file('/home/ubuntu/api-indentikey/app/uploads/{}.mp3'.format(filename_split), format="mp3")
 
     modify_frame_rate = sound_ogg.set_frame_rate(16000)
 
     modify_sample_width = modify_frame_rate.set_sample_width(2)
 
+    modify_sample_channel = modify_sample_width.set_channels(1)
+
     filename_split = filename.split('.')[0]
-    modify_sample_width.export("/home/ubuntu/api-indentikey/app/uploads/{}.wav".format(filename_split),format="wav")
+    modify_sample_channel.export("/home/ubuntu/api-indentikey/app/uploads/{}.wav".format(filename_split),format="wav")
 
     os.remove('/home/ubuntu/api-indentikey/app/uploads/{}'.format(filename))
+    os.remove('/home/ubuntu/api-indentikey/app/uploads/{}.mp3'.format(filename_split))
