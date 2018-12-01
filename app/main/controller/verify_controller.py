@@ -8,6 +8,7 @@ from app.main.model.resource_settings import ResourceSettings
 from app.main.model.verification_methods import VerificationMethods
 from app.main.model.resource_access import ResourceAccess
 import json
+from datetime import datetime
 
 api = VerifyDto.api
 
@@ -85,9 +86,16 @@ def is_person_allowed(resources_id,persons_id):
         resource_access = ResourceAccess.query.filter_by(resource_id=resources_id,persons_id=persons_id,is_active=1).first()
 
         if resource_access:
-            return True
+            if resource_access.from_date is None and resource_access.to_date is None:
+                return True;
+            else:
+                if resource_access.from_date < resource_access.to_date and resource_access.to_date > datetime.now():
+                    return True;
+                else:
+                    return False;
         else:
-            return False
+            return False;
+
 
 def confirm_identity(minimun_threshold,results,resource_thresholds,qr_results):
 
