@@ -30,6 +30,9 @@ def get_all():
 def get_one(id):
     return PersonsData.query.filter_by(id=id).first()
 
+def get_one_by_persons_id(id):
+    return PersonsData.query.filter_by(persons_id=id).first()
+
 def update(id,data):
     item = PersonsData.query.filter_by(id=id).first()
     if item:

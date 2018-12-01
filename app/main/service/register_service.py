@@ -29,11 +29,14 @@ def register_qr_code(data):
 
     persons_id = data['persons_id']
 
+    persons_email = ''
+
     # Lets save the id on the person's data
     person = Persons.query.filter_by(id=persons_id).first()
 
     if person:
         person_data = PersonsData.query.filter_by(persons_id=person.id).first()
+        persons_email = person.email
 
         if person_data:
             person_data.qr_code = randomId
@@ -51,31 +54,31 @@ def register_qr_code(data):
     #To save the image in a new location on the server.
     qr.png('/home/ubuntu/api-indentikey/app/uploads/{}.png'.format(randomId), scale=5)
 
+    #To send by email the generated qr code image.
+    fromaddr ="example@identikey.com"
+    toaddr = "rafaelwhite27@hotmail.com"
+    msg = MIMEMultipart()
+    msg['From'] = "example@identikey.com"
+    msg['To'] = "rafaelwhite27@hotmail.com"
+    msg['Subject'] = "QR Code Image"
+    body = "Python test mail"
+    msg.attach(MIMEText(body, 'plain'))
+
+    img_data = open('/home/ubuntu/api-indentikey/app/uploads/{}.png'.format(randomId), 'rb').read()
+    ImgFileName = 'test.png'
+    image = MIMEImage(img_data, name=os.path.basename(ImgFileName))
+    msg.attach(image)
+    # Here we create the actual mail server. It would be wise to create it for global use.
+    server = smtplib.SMTP('smtp.mailgun.org', 587)
+    server.ehlo()
+    server.starttls()
+    server.ehlo()
+    server.login(os.getenv("MAILGUN_USERNAME"),os.getenv("MAILGUN_PASSWORD")) # Need to put this credential in a .env or some other file
+    text = msg.as_string()
+    server.sendmail(fromaddr, toaddr, text)
+    server.quit()
+
     return randomId
-
-    # #To send by email the generated qr code image.
-    # fromaddr ="example@identikey.com"
-    # toaddr = "rafaelwhite27@hotmail.com"
-    # msg = MIMEMultipart()
-    # msg['From'] = "example@identikey.com"
-    # msg['To'] = "rafaelwhite27@hotmail.com"
-    # msg['Subject'] = "QR Code Image Example"
-    # body = "Python test mail"
-    # msg.attach(MIMEText(body, 'plain'))
-
-    # img_data = open('/home/ubuntu/api-indentikey/app/uploads/{}.png'.format(randomId), 'rb').read()
-    # ImgFileName = 'test.png'
-    # image = MIMEImage(img_data, name=os.path.basename(ImgFileName))
-    # msg.attach(image)
-    # # Here we create the actual mail server. It would be wise to create it for global use.
-    # server = smtplib.SMTP('smtp.mailgun.org', 587)
-    # server.ehlo()
-    # server.starttls()
-    # server.ehlo()
-    # server.login(os.getenv("MAILGUN_USERNAME"),os.getenv("MAILGUN_PASSWORD")) # Need to put this credential in a .env or some other file
-    # text = msg.as_string()
-    # server.sendmail(fromaddr, toaddr, text)
-    # server.quit()
 
 
 def register_fingerprint(data):
@@ -123,13 +126,17 @@ def send_register_fingerprint(filename,persons_id):
     body_0 = open('/home/ubuntu/api-indentikey/app/uploads/fingerprint[0].bmp', 'rb')
     body_1 = open('/home/ubuntu/api-indentikey/app/uploads/fingerprint[1].bmp', 'rb')
     body_2 = open('/home/ubuntu/api-indentikey/app/uploads/fingerprint[2].bmp', 'rb')
+    body_3 = open('/home/ubuntu/api-indentikey/app/uploads/fingerprint[3].bmp', 'rb')
+    body_4 = open('/home/ubuntu/api-indentikey/app/uploads/fingerprint[4].bmp', 'rb')
     
 
-    response = requests.post('http://ec2-52-21-122-184.compute-1.amazonaws.com:5000/register/{}'.format(persons_id),files=dict(fingerprint0=body_0,fingerprint1=body_1,fingerprint2=body_2))
+    response = requests.post('http://ec2-52-21-122-184.compute-1.amazonaws.com:5000/register/{}'.format(persons_id),files=dict(fingerprint0=body_0,fingerprint1=body_1,fingerprint2=body_2,fingerprint3=body_3,fingerprint4=body_4))
 
     os.remove('/home/ubuntu/api-indentikey/app/uploads/fingerprint[0].bmp')
     os.remove('/home/ubuntu/api-indentikey/app/uploads/fingerprint[1].bmp')
     os.remove('/home/ubuntu/api-indentikey/app/uploads/fingerprint[2].bmp')
+    os.remove('/home/ubuntu/api-indentikey/app/uploads/fingerprint[3].bmp')
+    os.remove('/home/ubuntu/api-indentikey/app/uploads/fingerprint[4].bmp')
 
 
     return response

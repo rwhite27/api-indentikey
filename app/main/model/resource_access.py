@@ -9,6 +9,8 @@ class ResourceAccess(db.Model):
     persons_id = db.Column(db.Integer, unique=False, nullable=False)
     roles_id = db.Column(db.Integer, unique=False, nullable=False)
     is_active = db.Column(db.Integer, unique=False,default=0, nullable=True)
+    from_date = db.Column(db.DateTime, nullable=True)
+    to_date = db.Column(db.DateTime, nullable=True)
     is_deleted = db.Column(db.Integer, unique=False,default=0, nullable=False)
     created_at = db.Column(db.DateTime, nullable=True)
     updated_at = db.Column(db.DateTime, nullable=True)

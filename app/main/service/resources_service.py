@@ -162,7 +162,7 @@ def get_all_resouce_access(id):
         if resource_access:
             results = []
             for access in resource_access:
-                person = Persons.query.filter_by(id=access.persons_id).first()
+                person = Persons.query.filter_by(id=access.persons_id,was_validated=1).first()
                 item = {}
                 item['id'] = access.id
                 item['resource_id'] = access.resource_id

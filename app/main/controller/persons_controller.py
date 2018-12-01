@@ -3,7 +3,7 @@ from flask_restplus import Resource
 
 from ..util.dto import PersonsDto
 from ..util.dto import ResourcesDto
-from ..service.persons_service import create, get_all, get_one,update,delete, login,logout,get_all_user_resources, get_person_by_email,get_all_user_resource_access, put_user_resource_access
+from ..service.persons_service import create, get_all, get_one,update,delete, login,logout,get_all_user_resources, get_person_by_email,get_all_user_resource_access, put_user_resource_access,validate_persons_email,add_invite_to_resource,send_invitation
 from flask_jwt import JWT, jwt_required, current_identity
 
 api = PersonsDto.api
@@ -100,3 +100,27 @@ class PersonsLogout(Resource):
         data = request.form
         """Fetch a person by email"""
         return get_person_by_email(data)
+
+@api.route('/validate')
+class PersonsValidate(Resource):
+    @api.doc('validate a persons through email')
+    def get(self):
+        email = request.args.get('email')
+        """List all registered persons"""
+        return validate_persons_email(email=email)
+
+@api.route('/invite/<id>/resource')
+class PersonsInvite(Resource):
+    @api.doc('validate a persons through email')
+    def get(self,id):
+        email = request.args.get('email')
+        resource_id = request.args.get('resource_id')
+        from_date = request.args.get('from_date')
+        to_date = request.args.get('to_date')
+        """List all registered persons"""
+        return add_invite_to_resource(email=email,resource_id=resource_id,from_date=from_date,to_date=to_date)
+
+    def post(self,id):
+        data = request.form
+        """Fetch a person by email"""
+        return send_invitation(id=id,email=data['email'],resource_id=data['resource_id'])
