@@ -209,6 +209,9 @@ def add_invite_to_resource(email,resource_id,from_date,to_date):
     #Search for person in database and activate
     person = Persons.query.filter_by(email=email,was_validated=1).first()
 
+    spaced_from_date = from_date.replace('*',' ')
+    spaced_to_date = to_date.replace('*',' ')
+
     if person:
 
         new_item = ResourceAccess(
@@ -216,8 +219,8 @@ def add_invite_to_resource(email,resource_id,from_date,to_date):
             persons_id=person.id,
             roles_id=2,
             is_active=1,
-            from_date = from_date,
-            to_date= to_date,
+            from_date = spaced_from_date,
+            to_date= spaced_to_date,
             created_at = datetime.datetime.utcnow()
         )
 
@@ -227,22 +230,23 @@ def add_invite_to_resource(email,resource_id,from_date,to_date):
     else:
         return 'Person not found so could not be added to Resource'
 
-def send_invitation(id,email,resource_id):
+def send_invitation(id,data):
 
-    invite_person = Persons.query.filter_by(email=email,was_validated=1).first()
+    invite_person = Persons.query.filter_by(email=data['email'],was_validated=1).first()
 
     if invite_person:
-      send_invitation_email(id,email,resource_id)
+      send_invitation_email(id,data)
+      return "Invitation sent"
     else:
         return "Person not found in our database"
 
 def send_validation_email(email):
     #To send by email the generated qr code image.
     fromaddr ="example@identikey.com"
-    toaddr = "rafaelwhite27@hotmail.com" # Se supone que aqui va el email de la persona que se registro
+    toaddr = "perahobuxi@idx4.com" # Se supone que aqui va el email de la persona que se registro
     msg = MIMEMultipart()
     msg['From'] = "example@identikey.com"
-    msg['To'] = "rafaelwhite27@hotmail.com"
+    msg['To'] = "perahobuxi@idx4.com"
     msg['Subject'] = "Identikey Validation"
     body = "Here is your validation link: http://ec2-52-21-122-184.compute-1.amazonaws.com:8888?email={}".format(email)
     msg.attach(MIMEText(body, 'plain'))
@@ -262,22 +266,25 @@ def send_validation_email(email):
     server.quit()
     print('Email sent')
 
-def send_invitation_email(id,email,resource_id):
+def send_invitation_email(id,data):
 
     host_person = Persons.query.filter_by(id=id,was_validated=1).first()
 
     host_full_name = host_person.firstname +' '+ host_person.lastname
 
-    resource = Resources.query.filter_by(id=resource_id).first()
+    resource = Resources.query.filter_by(id=data['resource_id']).first()
+
+    escaped_from_date = data['from_date'].replace(' ','*')
+    escaped_to_date = data['to_date'].replace(' ','*')
 
     #To send by email the generated qr code image.
     fromaddr ="example@identikey.com"
-    toaddr = "rafaelwhite27@hotmail.com" # Se supone que aqui va el email de la persona que se registro
+    toaddr = "perahobuxi@idx4.com" # Se supone que aqui va el email de la persona que se registro
     msg = MIMEMultipart()
     msg['From'] = "example@identikey.com"
-    msg['To'] = "rafaelwhite27@hotmail.com"
+    msg['To'] = "perahobuxi@idx4.com"
     msg['Subject'] = "{} has invited you".format(host_full_name)
-    body = "{} has invited you to {} resource. Please click on the link to succesfully add you to {} resource: http://ec2-52-21-122-184.compute-1.amazonaws.com:8888?invite={}".format(host_full_name,resource.name,host_full_name,email)
+    body = "{} has invited you to {} resource. Please click on the link to succesfully add you to {} resource: http://ec2-52-21-122-184.compute-1.amazonaws.com:8888/persons/invite/{}/resource?email={}&resource_id={}&from_date={}&to_date={}".format(host_full_name,resource.name,host_full_name,id,data['email'],data['resource_id'],escaped_from_date,escaped_to_date)
     msg.attach(MIMEText(body, 'plain'))
 
     # img_data = open('/home/ubuntu/api-indentikey/app/uploads/{}.png'.format(randomId), 'rb').read()
