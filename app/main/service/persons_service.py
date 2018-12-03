@@ -248,7 +248,7 @@ def send_validation_email(email):
     msg['From'] = "example@identikey.com"
     msg['To'] = "perahobuxi@idx4.com"
     msg['Subject'] = "Identikey Validation"
-    body = "Here is your validation link: http://ec2-52-21-122-184.compute-1.amazonaws.com:8888?email={}".format(email)
+    body = "Here is your validation link: http://ec2-52-21-122-184.compute-1.amazonaws.com:8888?/persons/validate?email={}".format(email)
     msg.attach(MIMEText(body, 'plain'))
 
     # img_data = open('/home/ubuntu/api-indentikey/app/uploads/{}.png'.format(randomId), 'rb').read()

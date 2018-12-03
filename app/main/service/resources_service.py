@@ -1,5 +1,6 @@
 import uuid
 import datetime
+from time import strftime
 
 from app.main import db
 from app.main.model.resources import Resources
@@ -172,9 +173,10 @@ def get_all_resouce_access(id):
                 item['persons_email'] = person.email
                 item['is_active'] = access.is_active
                 item['is_deleted'] = access.is_deleted
-                item['created_at'] = access.created_at
+                item['created_at'] = ' ' if access.created_at is None else access.created_at.strftime('%Y-%m-%d %H:%M:%S')
                 item['updated_at'] = access.updated_at
-
+                item['from_date'] = ' ' if access.from_date is  None else access.from_date.strftime('%Y-%m-%d %H:%M:%S')
+                item['to_date'] = ' ' if access.to_date is None else access.to_date.strftime('%Y-%m-%d %H:%M:%S')
                 results.append(item)
             return results
         else:
