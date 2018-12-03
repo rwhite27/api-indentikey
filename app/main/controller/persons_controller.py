@@ -123,4 +123,4 @@ class PersonsInvite(Resource):
     def post(self,id):
         data = request.form
         """Fetch a person by email"""
-        return send_invitation(id=id,email=data['email'],resource_id=data['resource_id'])
+        return send_invitation(id=id,data=data)

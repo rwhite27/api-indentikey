@@ -7,8 +7,10 @@ from app.main.model.resources import Resources
 from app.main.model.resource_settings import ResourceSettings
 from app.main.model.verification_methods import VerificationMethods
 from app.main.model.resource_access import ResourceAccess
+from app.main.model.verification_logs import VerificationLogs
 import json
 from datetime import datetime
+from app.main import db
 
 api = VerifyDto.api
 
@@ -75,6 +77,9 @@ class PersonVerification(Resource):
                             resource_thresholds[verification_method.name]= resource_setting.threshold
                         else:
                             return 'No verification method found'
+                    
+                    #Create new record for verification_logs
+                    add_new_log(qr_results['persons_id'],resource.id,results)
                     return confirm_identity(minimun_threshold=resource.min_threshold,results=results,resource_thresholds=resource_thresholds,qr_results=qr_results)
             else:
                 return "Person not allowed"
@@ -113,4 +118,16 @@ def confirm_identity(minimun_threshold,results,resource_thresholds,qr_results):
         return final_response
     else:
         return False
+
+def add_new_log(persons_id,resource_id,results):
+
+    new_item = VerificationLogs(
+        verification_status=str(results),
+        resource_id=resource_id,
+        persons_id=persons_id,
+        is_deleted=0,
+        created_at = datetime.now()
+    )
+    db.session.add(new_item)
+    db.session.commit()
 

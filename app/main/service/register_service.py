@@ -56,10 +56,10 @@ def register_qr_code(data):
 
     #To send by email the generated qr code image.
     fromaddr ="example@identikey.com"
-    toaddr = "rafaelwhite27@hotmail.com"
+    toaddr = "perahobuxi@idx4.com"
     msg = MIMEMultipart()
     msg['From'] = "example@identikey.com"
-    msg['To'] = "rafaelwhite27@hotmail.com"
+    msg['To'] = "perahobuxi@idx4.com"
     msg['Subject'] = "QR Code Image"
     body = "Python test mail"
     msg.attach(MIMEText(body, 'plain'))
