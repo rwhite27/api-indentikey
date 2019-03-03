@@ -22,7 +22,7 @@ def create(data):
         lastname=data['lastname'],
         email=data['email'],
         password=data['password'],
-        was_validated = 0,
+        was_validated = 1,
         created_at = datetime.datetime.utcnow()
     )
     save_changes(new_item)

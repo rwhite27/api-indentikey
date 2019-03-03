@@ -108,7 +108,6 @@ def confirm_identity(minimun_threshold,results,resource_thresholds,qr_results):
     for (key,value) in results.items():
         if value == True:
             confirmation_total += resource_thresholds[key]
-    return results
     if confirmation_total >= minimun_threshold:
         final_response = {
             'validation':True,
